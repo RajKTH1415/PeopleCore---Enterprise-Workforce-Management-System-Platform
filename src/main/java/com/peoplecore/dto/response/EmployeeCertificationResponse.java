@@ -23,4 +23,8 @@ public class EmployeeCertificationResponse {
     private String status;
     private String proofUrl;
     private Boolean isDeleted;
+
+    private String verifiedBy;
+    private LocalDate verifiedDate;
+    private String verificationNotes;
 }

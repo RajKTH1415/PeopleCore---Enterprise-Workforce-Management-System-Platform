@@ -45,4 +45,6 @@ public interface EmployeeCertificationsService {
             RenewCertificationRequest request
     );
 
+    EmployeeCertificationResponse verifyCertification(Long employeeId, Long certificationId);
+
 }

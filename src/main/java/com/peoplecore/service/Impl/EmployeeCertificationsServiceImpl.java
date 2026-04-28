@@ -337,6 +337,45 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .build();
     }
 
+    @Override
+    public EmployeeCertificationResponse verifyCertification(Long employeeId, Long certificationId) {
+
+        EmployeeCertification ec = employeeCertificationsRepository
+                .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(employeeId, certificationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Employee Certification not found"));
+
+        LocalDate today = LocalDate.now();
+
+        if (ec.getExpiryDate() != null && ec.getExpiryDate().isBefore(today)) {
+            throw new BadRequestException("Cannot verify expired certification");
+        }
+
+        ec.setStatus(CertificationStatus.VERIFIED.name());
+
+        //  NEW AUDIT FIELDS
+        ec.setVerifiedBy("SYSTEM"); // later replace with logged-in user
+        ec.setVerifiedDate(today);
+        ec.setVerificationNotes("Certification verified after validation");
+
+        EmployeeCertification saved = employeeCertificationsRepository.save(ec);
+
+        return EmployeeCertificationResponse.builder()
+                .id(saved.getId())
+                .certificationNumber(saved.getCertificateNumber())
+                .issueDate(saved.getIssueDate())
+                .expiryDate(saved.getExpiryDate())
+                .status(saved.getStatus())
+                .proofUrl(saved.getProofUrl())
+                .isDeleted(saved.getIsDeleted())
+
+                // ✅ NEW FIELDS
+                .verifiedBy(saved.getVerifiedBy())
+                .verifiedDate(saved.getVerifiedDate())
+                .verificationNotes(saved.getVerificationNotes())
+
+                .build();
+    }
 
     private EmployeeCertificationResponse mapToResponse(EmployeeCertification ec) {
         return EmployeeCertificationResponse.builder()
@@ -344,7 +383,7 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .certificationNumber(ec.getCertificateNumber())
                 .issueDate(ec.getIssueDate())
                 .expiryDate(ec.getExpiryDate())
-                .status(ec.getStatus())
+                .status(calculateStatus(ec.getExpiryDate()))
                 .proofUrl(ec.getProofUrl())
                 .isDeleted(ec.getIsDeleted())
                 .build();

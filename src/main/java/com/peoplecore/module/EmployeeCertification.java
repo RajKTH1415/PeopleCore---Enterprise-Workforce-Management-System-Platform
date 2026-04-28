@@ -44,4 +44,11 @@ public class EmployeeCertification extends Auditable implements Serializable {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
+
+    private String verifiedBy;
+
+    private LocalDate verifiedDate;
+
+    @Column(length = 1000)
+    private String verificationNotes;
 }

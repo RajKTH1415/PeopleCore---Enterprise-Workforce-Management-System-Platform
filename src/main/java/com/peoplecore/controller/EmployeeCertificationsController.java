@@ -104,7 +104,7 @@ public class EmployeeCertificationsController {
             @PathVariable Long employeeId,
             @PathVariable Long certificationId,
             @RequestBody RenewCertificationRequest request,
-            HttpServletRequest servletRequest) {
+            HttpServletRequest httpServletRequest) {
 
         EmployeeCertificationResponse response =
                 employeeCertificationsService.renewCertification(
@@ -112,15 +112,18 @@ public class EmployeeCertificationsController {
                         certificationId,
                         request
                 );
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification renewed successfully", httpServletRequest.getRequestURI(), response));
+    }
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Certification renewed successfully",
-                        servletRequest.getRequestURI(),
-                        response
-                )
-        );
+    @PutMapping("/{employeeId}/certifications/{certificationId}/verify")
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> verifyCertification(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            HttpServletRequest httpServletRequest) {
+
+        EmployeeCertificationResponse response =
+                employeeCertificationsService.verifyCertification(employeeId, certificationId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification verified successfully", httpServletRequest.getRequestURI(), response));
     }
 
 }
