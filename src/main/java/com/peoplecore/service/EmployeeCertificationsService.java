@@ -2,6 +2,7 @@ package com.peoplecore.service;
 
 import com.peoplecore.dto.request.AssignCertificationRequest;
 import com.peoplecore.dto.request.BulkAssignCertificationRequest;
+import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
@@ -37,4 +38,11 @@ public interface EmployeeCertificationsService {
     BulkAssignResponse bulkAssignCertification(BulkAssignCertificationRequest request);
 
     List<EmployeeCertificationResponse> getExpiringSoon(int days, Long employeeId);
+
+    EmployeeCertificationResponse renewCertification(
+            Long employeeId,
+            Long certificationId,
+            RenewCertificationRequest request
+    );
+
 }

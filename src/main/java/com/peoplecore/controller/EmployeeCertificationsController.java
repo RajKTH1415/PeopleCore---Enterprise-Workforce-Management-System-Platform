@@ -1,6 +1,7 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.AssignCertificationRequest;
 import com.peoplecore.dto.request.BulkAssignCertificationRequest;
+import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
@@ -96,6 +97,30 @@ public class EmployeeCertificationsController {
         List<EmployeeCertificationResponse> response =
                 employeeCertificationsService.getExpiringSoon(days, employeeId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Expiring certifications fetched", httpServletRequest.getRequestURI(), response));
+    }
+
+    @PutMapping("/{employeeId}/certifications/{certificationId}/renew")
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> renewCertification(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            @RequestBody RenewCertificationRequest request,
+            HttpServletRequest servletRequest) {
+
+        EmployeeCertificationResponse response =
+                employeeCertificationsService.renewCertification(
+                        employeeId,
+                        certificationId,
+                        request
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Certification renewed successfully",
+                        servletRequest.getRequestURI(),
+                        response
+                )
+        );
     }
 
 }

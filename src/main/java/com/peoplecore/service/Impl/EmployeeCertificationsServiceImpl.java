@@ -2,10 +2,13 @@ package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.request.AssignCertificationRequest;
 import com.peoplecore.dto.request.BulkAssignCertificationRequest;
+import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.exception.BadRequestException;
+import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
 import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.module.Employee;
@@ -19,6 +22,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -285,6 +290,53 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public EmployeeCertificationResponse renewCertification(
+            Long employeeId,
+            Long certificationId,
+            RenewCertificationRequest request) {
+
+        EmployeeCertification ec = employeeCertificationsRepository
+                .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(employeeId, certificationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Employee Certification not found"));
+
+        // Update renewal fields
+        if (request.getIssueDate() != null) {
+            ec.setIssueDate(request.getIssueDate());
+        }
+
+        if (request.getExpiryDate() != null) {
+            ec.setExpiryDate(request.getExpiryDate());
+        }
+
+        if (request.getProofUrl() != null) {
+            ec.setProofUrl(request.getProofUrl());
+        }
+
+        if (request.getCertificateNumber() != null) {
+            ec.setCertificateNumber(request.getCertificateNumber());
+        }
+
+        // Reset / update status after renewal
+        ec.setStatus(calculateStatus(request.getExpiryDate() != null
+                ? request.getExpiryDate()
+                : ec.getExpiryDate()));
+
+        EmployeeCertification saved = employeeCertificationsRepository.save(ec);
+
+        return EmployeeCertificationResponse.builder()
+                .id(saved.getId())
+                .certificationNumber(saved.getCertificateNumber())
+                .issueDate(saved.getIssueDate())
+                .expiryDate(saved.getExpiryDate())
+                .status(saved.getStatus())
+                .proofUrl(saved.getProofUrl())
+                .isDeleted(saved.getIsDeleted())
+                .build();
+    }
+
 
     private EmployeeCertificationResponse mapToResponse(EmployeeCertification ec) {
         return EmployeeCertificationResponse.builder()
@@ -298,14 +350,6 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .build();
     }
 
-//    private String calculateStatus(LocalDate expiryDate) {
-//        if (expiryDate == null) {
-//            return CertificationStatus.ACTIVE.name();
-//        }
-//        return expiryDate.isBefore(LocalDate.now())
-//                ? CertificationStatus.EXPIRED.name()
-//                : CertificationStatus.ACTIVE.name();
-//    }
 
     private String calculateStatus(LocalDate expiryDate) {
 

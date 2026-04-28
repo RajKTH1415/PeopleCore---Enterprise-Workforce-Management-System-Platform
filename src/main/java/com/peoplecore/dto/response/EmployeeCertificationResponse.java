@@ -1,6 +1,7 @@
 package com.peoplecore.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.peoplecore.enums.CertificationStatus;
 import lombok.*;
 
 import java.time.LocalDate;
