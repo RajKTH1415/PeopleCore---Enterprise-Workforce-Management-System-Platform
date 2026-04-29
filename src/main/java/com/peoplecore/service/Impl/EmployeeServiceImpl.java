@@ -826,7 +826,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         EmployeeHierarchyResponse node = mapToHierarchy(manager);
 
-        node.setManager(buildManagerChain(manager.getManager())); // 🔁 upward recursion
+        node.setManager(buildManagerChain(manager.getManager())); // upward recursion
 
         return node;
     }
@@ -837,7 +837,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<Employee> subs = employeeRepository.findSubordinates(employee.getEmployeeId());
 
         List<EmployeeHierarchyResponse> subNodes = subs.stream()
-                .map(this::buildSubordinateTree) // 🔁 recursion
+                .map(this::buildSubordinateTree) // recursion
                 .toList();
 
         node.setSubordinates(subNodes);

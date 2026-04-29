@@ -21,9 +21,9 @@ public class EmployeeLifecycleHistory {
     private Long id;
 
 
-@ManyToOne
-@JoinColumn(name = "employee_id")
-private Employee employee;
+   @ManyToOne
+   @JoinColumn(name = "employee_id")
+   private Employee employee;
 
     private String oldStatus;
     private String newStatus;

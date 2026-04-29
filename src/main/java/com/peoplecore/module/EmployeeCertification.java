@@ -1,8 +1,9 @@
 package com.peoplecore.module;
 
-import com.peoplecore.enums.CertificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -51,4 +52,12 @@ public class EmployeeCertification extends Auditable implements Serializable {
 
     @Column(length = 1000)
     private String verificationNotes;
+
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "certificate_file")
+    private byte[] certificateFile;
+
+    private String fileName;
+
+    private String fileType;
 }

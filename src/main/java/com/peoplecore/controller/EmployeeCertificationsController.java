@@ -125,5 +125,4 @@ public class EmployeeCertificationsController {
                 employeeCertificationsService.verifyCertification(employeeId, certificationId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification verified successfully", httpServletRequest.getRequestURI(), response));
     }
-
 }

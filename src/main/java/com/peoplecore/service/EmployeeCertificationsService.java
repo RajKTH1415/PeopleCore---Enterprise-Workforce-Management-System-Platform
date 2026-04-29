@@ -7,6 +7,7 @@ import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,5 +47,8 @@ public interface EmployeeCertificationsService {
     );
 
     EmployeeCertificationResponse verifyCertification(Long employeeId, Long certificationId);
+
+
+
 
 }

@@ -13,7 +13,9 @@ import com.peoplecore.module.Certification;
 import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.module.Employee;
 import com.peoplecore.module.EmployeeCertification;
+import com.peoplecore.module.EmployeeCertificationAudit;
 import com.peoplecore.repository.CertificationRepository;
+import com.peoplecore.repository.EmployeeCertificationAuditRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.repository.EmployeeRepository;
 import com.peoplecore.service.EmployeeCertificationsService;
@@ -23,8 +25,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +39,13 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
     private final EmployeeCertificationsRepository employeeCertificationsRepository;
     private final CertificationRepository certificationRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeCertificationAuditRepository employeeCertificationAuditRepository;
 
-    public EmployeeCertificationsServiceImpl(EmployeeCertificationsRepository employeeCertificationsRepository, CertificationRepository certificationRepository, EmployeeRepository employeeRepository) {
+    public EmployeeCertificationsServiceImpl(EmployeeCertificationsRepository employeeCertificationsRepository, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationAuditRepository employeeCertificationAuditRepository) {
         this.employeeCertificationsRepository = employeeCertificationsRepository;
         this.certificationRepository = certificationRepository;
         this.employeeRepository = employeeRepository;
+        this.employeeCertificationAuditRepository = employeeCertificationAuditRepository;
     }
 
 
@@ -369,7 +375,7 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .proofUrl(saved.getProofUrl())
                 .isDeleted(saved.getIsDeleted())
 
-                // ✅ NEW FIELDS
+                //  NEW FIELDS
                 .verifiedBy(saved.getVerifiedBy())
                 .verifiedDate(saved.getVerifiedDate())
                 .verificationNotes(saved.getVerificationNotes())
