@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 
+import com.peoplecore.constants.CertificationAuditActions;
 import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PreviewCertificateResponse;
@@ -56,7 +57,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
             EmployeeCertificationAudit employeeCertificationAudit = new EmployeeCertificationAudit();
             employeeCertificationAudit.setEmployeeId(employeeId);
             employeeCertificationAudit.setCertificationId(certificationId);
-            employeeCertificationAudit.setAction("UPLOADED");
+            employeeCertificationAudit.setAction(CertificationAuditActions.FILE_UPLOADED);
             employeeCertificationAudit.setFileName(file.getOriginalFilename());
             employeeCertificationAudit.setFileType(file.getContentType());
             employeeCertificationAudit.setFileData(file.getBytes());
@@ -191,7 +192,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
 
         audit.setEmployeeId(employeeId);
         audit.setCertificationId(certificationId);
-        audit.setAction("FILE_DELETED");
+        audit.setAction(CertificationAuditActions.FILE_DELETED);
         audit.setFileName(deletedFileName);
         audit.setPerformedBy("SYSTEM");
         audit.setPerformedAt(LocalDateTime.now());
@@ -235,15 +236,17 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
 
             audit.setEmployeeId(employeeId);
             audit.setCertificationId(certificationId);
-            audit.setAction("FILE_REPLACED");
+            audit.setAction(CertificationAuditActions.FILE_REPLACED);
             audit.setFileName(file.getOriginalFilename());
             audit.setFileType(file.getContentType());
             audit.setFileData(file.getBytes());
             audit.setPerformedBy("SYSTEM");
             audit.setPerformedAt(LocalDateTime.now());
             audit.setRemarks(
-                    "Certificate replaced. Old file: " + oldFileName);
-
+                    (oldFileName != null && !oldFileName.isBlank())
+                            ? "Certificate replaced. Old file: " + oldFileName
+                            : "Certificate uploaded for the first time via replace operation"
+            );
             employeeCertificationAuditRepository.save(audit);
 
             return EmployeeCertificationResponse.builder()
