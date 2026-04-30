@@ -10,8 +10,6 @@ import com.peoplecore.module.EmployeeCertificationAudit;
 import com.peoplecore.repository.EmployeeCertificationAuditRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.service.EmployeeCertificationFileService;
-import com.peoplecore.util.ApiResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -161,7 +159,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
 
     @Override
     @Transactional
-    public ApiResponse<Void> deleteCertificateFile(
+    public void deleteCertificateFile(
             Long employeeId,
             Long certificationId) {
 
@@ -170,8 +168,9 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
                         .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(
                                 employeeId,
                                 certificationId)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Employee certification not found"));
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Employee certification not found"));
 
         if (certification.getCertificateFile() == null
                 || certification.getCertificateFile().length == 0) {
@@ -187,7 +186,9 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
 
         employeeCertificationsRepository.save(certification);
 
-        EmployeeCertificationAudit audit = new EmployeeCertificationAudit();
+        EmployeeCertificationAudit audit =
+                new EmployeeCertificationAudit();
+
         audit.setEmployeeId(employeeId);
         audit.setCertificationId(certificationId);
         audit.setAction("FILE_DELETED");
@@ -197,13 +198,6 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
         audit.setRemarks("Certificate file deleted successfully");
 
         employeeCertificationAuditRepository.save(audit);
-
-        return ApiResponse.<Void>success(
-                200,
-                "Certificate file deleted successfully",
-                null,
-                null
-        );
     }
 
     @Override
