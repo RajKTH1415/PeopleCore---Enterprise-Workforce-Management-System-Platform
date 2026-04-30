@@ -1,9 +1,12 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
+import com.peoplecore.dto.response.PreviewCertificateResponse;
 import com.peoplecore.service.EmployeeCertificationFileService;
 import com.peoplecore.util.ApiResponse;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,8 +36,9 @@ public class EmployeeCertificationFileController {
                         employeeId,
                         certificationId,
                         file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(),"Certificate uploaded successfully", httpServletRequest.getRequestURI(), response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Certificate uploaded successfully", httpServletRequest.getRequestURI(), response));
     }
+
     @GetMapping("/{employeeId}/certifications/{certificationId}/download")
     public ResponseEntity<byte[]> downloadCertificate(
             @PathVariable Long employeeId,
@@ -53,5 +57,29 @@ public class EmployeeCertificationFileController {
                 )
                 .contentLength(response.getFileSize())
                 .body(response.getFileData());
+    }
+
+    @GetMapping("/{employeeId}/certifications/{certificationId}/preview")
+    public ResponseEntity<ByteArrayResource> previewCertificate(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId) {
+
+        PreviewCertificateResponse response =
+                employeeCertificationFileService.previewCertificate(
+                        employeeId,
+                        certificationId);
+
+        ByteArrayResource resource =
+                new ByteArrayResource(response.getFileData());
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(response.getContentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + response.getFileName() + "\"")
+                .header("X-Message", response.getMessage())
+                .contentLength(response.getFileSize())
+                .body(resource);
     }
 }

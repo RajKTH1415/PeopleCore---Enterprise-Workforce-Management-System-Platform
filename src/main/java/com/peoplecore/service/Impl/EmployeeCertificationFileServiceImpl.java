@@ -2,6 +2,7 @@ package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
+import com.peoplecore.dto.response.PreviewCertificateResponse;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.EmployeeCertification;
@@ -118,6 +119,39 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
                                 ? certification.getFileType()
                                 : MediaType.APPLICATION_OCTET_STREAM_VALUE
                 )
+                .fileData(certification.getCertificateFile())
+                .fileSize(certification.getCertificateFile().length)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PreviewCertificateResponse previewCertificate(
+            Long employeeId,
+            Long certificationId) {
+
+        EmployeeCertification certification =
+                employeeCertificationsRepository
+                        .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(
+                                employeeId,
+                                certificationId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Employee certification not found"));
+
+        if (certification.getCertificateFile() == null
+                || certification.getCertificateFile().length == 0) {
+            throw new ResourceNotFoundException(
+                    "No certificate file available for preview");
+        }
+
+        return PreviewCertificateResponse.builder()
+                .message("Certificate preview loaded successfully")
+                .fileName(certification.getFileName())
+                .contentType(
+                        certification.getFileType() != null
+                                ? certification.getFileType()
+                                : MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .fileData(certification.getCertificateFile())
                 .fileSize(certification.getCertificateFile().length)
                 .build();
