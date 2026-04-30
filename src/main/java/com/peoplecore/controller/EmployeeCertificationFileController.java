@@ -4,7 +4,6 @@ import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PreviewCertificateResponse;
 import com.peoplecore.service.EmployeeCertificationFileService;
 import com.peoplecore.util.ApiResponse;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -81,5 +80,25 @@ public class EmployeeCertificationFileController {
                 .header("X-Message", response.getMessage())
                 .contentLength(response.getFileSize())
                 .body(resource);
+    }
+
+    @DeleteMapping("/{employeeId}/certifications/{certificationId}/file")
+    public ResponseEntity<ApiResponse<Void>> deleteCertificateFile(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            HttpServletRequest httpServletRequest) {
+
+        employeeCertificationFileService.deleteCertificateFile(
+                employeeId,
+                certificationId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Certificate file deleted successfully",
+                        httpServletRequest.getRequestURI(),
+                        null
+                )
+        );
     }
 }

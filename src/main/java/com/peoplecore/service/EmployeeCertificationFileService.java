@@ -3,6 +3,7 @@ package com.peoplecore.service;
 import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PreviewCertificateResponse;
+import com.peoplecore.util.ApiResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface EmployeeCertificationFileService {
@@ -20,6 +21,10 @@ public interface EmployeeCertificationFileService {
     );
 
     PreviewCertificateResponse previewCertificate(
+            Long employeeId,
+            Long certificationId);
+
+    ApiResponse<Void> deleteCertificateFile(
             Long employeeId,
             Long certificationId);
 }
