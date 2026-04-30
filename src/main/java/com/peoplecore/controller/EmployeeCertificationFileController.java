@@ -1,9 +1,12 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.service.EmployeeCertificationFileService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,5 +34,24 @@ public class EmployeeCertificationFileController {
                         certificationId,
                         file);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(),"Certificate uploaded successfully", httpServletRequest.getRequestURI(), response));
+    }
+    @GetMapping("/{employeeId}/certifications/{certificationId}/download")
+    public ResponseEntity<byte[]> downloadCertificate(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId) {
+
+        DownloadCertificateResponse response =
+                employeeCertificationFileService.downloadCertificate(
+                        employeeId,
+                        certificationId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(response.getContentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + response.getFileName() + "\""
+                )
+                .contentLength(response.getFileSize())
+                .body(response.getFileData());
     }
 }

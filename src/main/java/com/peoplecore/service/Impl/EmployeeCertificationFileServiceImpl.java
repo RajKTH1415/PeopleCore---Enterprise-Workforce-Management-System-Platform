@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 
+import com.peoplecore.dto.response.DownloadCertificateResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
@@ -8,7 +9,9 @@ import com.peoplecore.module.EmployeeCertificationAudit;
 import com.peoplecore.repository.EmployeeCertificationAuditRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.service.EmployeeCertificationFileService;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -81,5 +84,42 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
         } catch (Exception e) {
             throw new RuntimeException("Error while uploading file: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DownloadCertificateResponse downloadCertificate(
+            Long employeeId,
+            Long certificationId) {
+
+        EmployeeCertification certification = employeeCertificationsRepository
+                .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(
+                        employeeId,
+                        certificationId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee certification not found"
+                        )
+                );
+
+        // Correct validation
+        if (certification.getCertificateFile() == null
+                || certification.getCertificateFile().length == 0) {
+            throw new ResourceNotFoundException(
+                    "No certificate file has been uploaded for this certification"
+            );
+        }
+
+        return DownloadCertificateResponse.builder()
+                .fileName(certification.getFileName())
+                .contentType(
+                        certification.getFileType() != null
+                                ? certification.getFileType()
+                                : MediaType.APPLICATION_OCTET_STREAM_VALUE
+                )
+                .fileData(certification.getCertificateFile())
+                .fileSize(certification.getCertificateFile().length)
+                .build();
     }
 }

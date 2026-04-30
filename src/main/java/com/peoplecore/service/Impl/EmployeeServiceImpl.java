@@ -663,7 +663,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .department(updatedEmployee.getDepartment())
                 .status(updatedEmployee.getStatus())
 
-                // ✅ Use actual values
+                //  Use actual values
                 .employmentStatus(updatedEmployee.getEmploymentStatus())
                 .joiningDate(updatedEmployee.getJoiningDate())
                 .noticeStartDate(updatedEmployee.getNoticeStartDate())

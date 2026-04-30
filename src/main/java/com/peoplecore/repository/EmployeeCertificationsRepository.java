@@ -78,4 +78,6 @@ public interface EmployeeCertificationsRepository extends JpaRepository<Employee
       AND ec.expiryDate < CURRENT_DATE
 """)
     List<EmployeeCertification> findAllExpiredActiveCertifications();
+
+
 }
