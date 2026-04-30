@@ -205,4 +205,72 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
                 null
         );
     }
+
+    @Override
+    @Transactional
+    public EmployeeCertificationResponse replaceCertificateFile(
+            Long employeeId,
+            Long certificationId,
+            MultipartFile file) {
+
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("File cannot be empty");
+        }
+
+        EmployeeCertification certification =
+                employeeCertificationsRepository
+                        .findByEmployeeIdAndCertificationIdAndIsDeletedFalse(
+                                employeeId,
+                                certificationId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Employee certification not found"));
+
+        String oldFileName = certification.getFileName();
+
+        try {
+            certification.setCertificateFile(file.getBytes());
+            certification.setFileName(file.getOriginalFilename());
+            certification.setFileType(file.getContentType());
+
+            EmployeeCertification saved =
+                    employeeCertificationsRepository.save(certification);
+
+            EmployeeCertificationAudit audit =
+                    new EmployeeCertificationAudit();
+
+            audit.setEmployeeId(employeeId);
+            audit.setCertificationId(certificationId);
+            audit.setAction("FILE_REPLACED");
+            audit.setFileName(file.getOriginalFilename());
+            audit.setFileType(file.getContentType());
+            audit.setFileData(file.getBytes());
+            audit.setPerformedBy("SYSTEM");
+            audit.setPerformedAt(LocalDateTime.now());
+            audit.setRemarks(
+                    "Certificate replaced. Old file: " + oldFileName);
+
+            employeeCertificationAuditRepository.save(audit);
+
+            return EmployeeCertificationResponse.builder()
+                    .id(saved.getId())
+                    .certificationName(saved.getCertification().getName())
+                    .certificationNumber(saved.getCertificateNumber())
+                    .issueDate(saved.getIssueDate())
+                    .expiryDate(saved.getExpiryDate())
+                    .status(saved.getStatus())
+                    .proofUrl(saved.getProofUrl())
+                    .fileName(saved.getFileName())
+                    .fileType(saved.getFileType())
+                    .fileSize(file.getSize())
+                    .certificateUploaded(true)
+                    .uploadedAt(saved.getUpdatedDate())
+                    .isDeleted(saved.getIsDeleted())
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to replace certificate file", e);
+        }
+    }
 }

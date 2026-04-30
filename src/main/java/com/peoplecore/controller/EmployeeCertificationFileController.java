@@ -97,8 +97,24 @@ public class EmployeeCertificationFileController {
                         HttpStatus.OK.value(),
                         "Certificate file deleted successfully",
                         httpServletRequest.getRequestURI(),
-                        null
-                )
-        );
+                        null));
+    }
+
+    @PutMapping(
+            value = "/{employeeId}/certifications/{certificationId}/file",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> replaceCertificateFile(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest httpServletRequest) {
+
+        EmployeeCertificationResponse response =
+                employeeCertificationFileService.replaceCertificateFile(
+                        employeeId,
+                        certificationId,
+                        file);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certificate file replaced successfully", httpServletRequest.getRequestURI(), response));
     }
 }

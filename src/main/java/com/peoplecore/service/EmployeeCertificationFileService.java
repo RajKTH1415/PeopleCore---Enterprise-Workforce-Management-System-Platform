@@ -27,4 +27,9 @@ public interface EmployeeCertificationFileService {
     ApiResponse<Void> deleteCertificateFile(
             Long employeeId,
             Long certificationId);
+
+    EmployeeCertificationResponse replaceCertificateFile(
+            Long employeeId,
+            Long certificationId,
+            MultipartFile file);
 }
