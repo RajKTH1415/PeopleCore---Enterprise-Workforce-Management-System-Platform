@@ -55,8 +55,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                     .orElseThrow(() -> new RuntimeException("Employee Manager not found"));
             employee.setManager(manager);
         }
-        employee.setCreatedDate(LocalDate.now());
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setCreatedDate(LocalDateTime.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setCreatedBy("SYSTEM");
         employee.setUpdatedBy("SYSTEM");
 
@@ -154,7 +154,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
 
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 
         Employee savedEmployee = employeeRepository.save(employee);
@@ -229,7 +229,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employee.setStatus(Status.DELETED);
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 
         Employee savedEmployee = employeeRepository.save(employee);
@@ -413,8 +413,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setProbationEndDate(joiningDate.plusDays(90));
 
 
-        employee.setCreatedDate(LocalDate.now());
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setCreatedDate(LocalDateTime.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setCreatedBy("SYSTEM");
         employee.setUpdatedBy("SYSTEM");
 
@@ -491,8 +491,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .joiningDate(savedEmployee.getJoiningDate())
                 .employmentStatus(EmploymentStatus.PROBATION)
                 .createdBy("SYSTEM")
-                .createdDate(LocalDate.now())
-                .updatedDate(LocalDate.now())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .updatedBy("SYSTEM")
                 .build();
 
@@ -512,7 +512,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmploymentStatus(EmploymentStatus.ACTIVE);
         employee.setConfirmationDate(LocalDate.now());
 
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 
         Employee savedEmployee = employeeRepository.save(employee);
@@ -541,9 +541,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .employmentStatus(EmploymentStatus.ACTIVE)
                 .department(savedEmployee.getDepartment())
                 .designation(savedEmployee.getDesignation())
-                .createdDate(LocalDate.now())
+                .createdDate(LocalDateTime.now())
                 .createdBy("SYSTEM")
-                .updatedDate(LocalDate.now())
+                .updatedDate(LocalDateTime.now())
                 .updatedBy("SYSTEM")
                 .build();
     }
@@ -569,7 +569,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmploymentStatus(EmploymentStatus.NOTICE_PERIOD);
 
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 
         Employee updatedEmployee = employeeRepository.save(employee);
@@ -601,8 +601,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .exitDate(employee.getExitDate())
                 .employmentStatus(EmploymentStatus.NOTICE_PERIOD)
                 .updatedBy("SYSTEM")
-                .updatedDate(LocalDate.now())
-                .createdDate(LocalDate.now())
+                .updatedDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.now())
                 .createdBy("SYSTEM")
                 .build();
 
@@ -635,7 +635,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmploymentStatus(EmploymentStatus.EXITED);
 
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 
         Employee updatedEmployee = employeeRepository.save(employee);
@@ -698,7 +698,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setTerminationReason(request.getReason());
 
         employee.setUpdatedBy("SYSTEM");
-        employee.setUpdatedDate(LocalDate.now());
+        employee.setUpdatedDate(LocalDateTime.now());
 
         // 4. Save employee
         Employee updatedEmployee = employeeRepository.save(employee);
@@ -896,8 +896,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         res.setDepartment(emp.getDepartment());
         res.setStatus(emp.getStatus());
         res.setJoiningDate(emp.getJoiningDate());
-        res.setCreatedDate(LocalDate.now());
-        res.setUpdatedDate(LocalDate.now());
+        res.setCreatedDate(LocalDateTime.now());
+        res.setUpdatedDate(LocalDateTime.now());
         res.setCreatedBy("SYSTEM");
         res.setUpdatedBy("SYSTEM");
 

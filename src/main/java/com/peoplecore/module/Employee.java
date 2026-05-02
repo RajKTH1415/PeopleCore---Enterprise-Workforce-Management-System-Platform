@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Entity
-public class Employee  {
+public class Employee  extends Auditable implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,16 +83,16 @@ public class Employee  {
     private List<Employee> subordinates;
 
 
-    @Column(name = "created_date")
-    private LocalDate createdDate;
-    @Column(name = "updated_date")
-    private LocalDate updatedDate;
-
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "updated_by")
-    private String updatedBy;
+//    @Column(name = "created_date")
+//    private LocalDate createdDate;
+//    @Column(name = "updated_date")
+//    private LocalDate updatedDate;
+//
+//    @Column(name = "created_by")
+//    private String createdBy;
+//
+//    @Column(name = "updated_by")
+//    private String updatedBy;
 
 
 }
