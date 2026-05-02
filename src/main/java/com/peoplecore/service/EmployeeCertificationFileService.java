@@ -31,4 +31,8 @@ public interface EmployeeCertificationFileService {
             Long employeeId,
             Long certificationId,
             MultipartFile file);
+
+    String generateDownloadUrl(
+            Long employeeId,
+            Long certificationId);
 }

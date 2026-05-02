@@ -28,6 +28,9 @@ public class EmployeeCertificationResponse {
     private Boolean isDeleted;
     private LocalDateTime uploadedAt;
 
+    private String fileUrl;
+    private String storagePath;
+
     private String verifiedBy;
     private LocalDate verifiedDate;
     private String verificationNotes;

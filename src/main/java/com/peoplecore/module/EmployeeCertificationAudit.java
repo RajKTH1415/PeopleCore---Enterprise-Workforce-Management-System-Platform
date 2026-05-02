@@ -1,6 +1,7 @@
 package com.peoplecore.module;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Data
 @Setter
 @Getter
@@ -34,6 +36,9 @@ public class EmployeeCertificationAudit {
     @Lob
     @JdbcTypeCode(SqlTypes.BINARY)
     private byte[] fileData;
+
+    @Column(name = "file_url", length = 1000)
+    private String fileUrl;
 
     private String performedBy;
 

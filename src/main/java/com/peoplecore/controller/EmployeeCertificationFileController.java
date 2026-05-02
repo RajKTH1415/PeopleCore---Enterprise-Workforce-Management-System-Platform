@@ -117,4 +117,24 @@ public class EmployeeCertificationFileController {
                         file);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certificate file replaced successfully", httpServletRequest.getRequestURI(), response));
     }
+
+
+    @GetMapping("/{employeeId}/certifications/{certificationId}/url")
+    public ResponseEntity<ApiResponse<String>> getDownloadUrl(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            HttpServletRequest request) {
+
+        String url = employeeCertificationFileService
+                .generateDownloadUrl(employeeId, certificationId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Download URL generated successfully",
+                        request.getRequestURI(),
+                        url
+                )
+        );
+    }
 }

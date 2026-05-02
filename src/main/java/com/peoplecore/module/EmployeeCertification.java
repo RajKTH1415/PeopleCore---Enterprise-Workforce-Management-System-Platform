@@ -7,6 +7,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -53,9 +54,18 @@ public class EmployeeCertification extends Auditable implements Serializable {
     @Column(length = 1000)
     private String verificationNotes;
 
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "certificate_file")
-    private byte[] certificateFile;
+//    @JdbcTypeCode(SqlTypes.BINARY)
+//    @Column(name = "certificate_file")
+//    private byte[] certificateFile;
+
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @Column(name = "uploaded_at")
+    private LocalDateTime uploadedAt;
 
     private String fileName;
 
