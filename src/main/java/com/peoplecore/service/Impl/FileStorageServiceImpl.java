@@ -1,7 +1,7 @@
 package com.peoplecore.service.Impl;
 
 import com.peoplecore.service.FileStorageService;
-import jakarta.persistence.criteria.Root;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,14 +14,16 @@ import java.util.UUID;
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
-    private static  final String root = "uploads";
+    @Value("${app.file.upload-dir}")
+    private String uploadDir;
+
 
     @Override
     public String uploadFile(MultipartFile file, String folder) {
         try{
 
             String fileName = UUID.randomUUID() +"_"+ file.getOriginalFilename();
-            Path directory = Paths.get(root,folder);
+            Path directory = Paths.get(uploadDir,folder);
             Files.createDirectories(directory);
 
             Path filePath = directory.resolve(fileName);

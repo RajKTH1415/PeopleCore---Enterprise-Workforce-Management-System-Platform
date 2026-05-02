@@ -51,14 +51,6 @@ public class EmployeeCertificationAuditController {
                 employeeCertificationAuditService.getVerificationDetails(
                         employeeId,
                         certificationId);
-
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Certification verification details fetched successfully",
-                        request.getRequestURI(),
-                        response
-                )
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification verification details fetched successfully", request.getRequestURI(), response));
     }
 }

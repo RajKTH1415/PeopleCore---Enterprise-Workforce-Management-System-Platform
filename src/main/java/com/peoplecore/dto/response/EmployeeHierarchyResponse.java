@@ -17,6 +17,6 @@ public class EmployeeHierarchyResponse {
     private String employeeId;
     private String fullName;
 
-    private EmployeeHierarchyResponse manager; // 🔼 upward
-    private List<EmployeeHierarchyResponse> subordinates; // 🔽 downward
+    private EmployeeHierarchyResponse manager; // upward
+    private List<EmployeeHierarchyResponse> subordinates; // downward
 }

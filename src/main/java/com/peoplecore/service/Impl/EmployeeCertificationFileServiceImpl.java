@@ -63,7 +63,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
             Long certificationId,
             MultipartFile file) {
 
-        validateFile(file);
+        validateFile(file); // validate the file
 
         EmployeeCertification certification =
                 employeeCertificationsRepository
@@ -286,7 +286,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
         String oldFileUrl = certification.getFileUrl();
 
         try {
-            // Delete existing file from cloud storage
+
             if (oldFileUrl != null && !oldFileUrl.isBlank()) {
                 fileStorageService.deleteFile(oldFileUrl);
             }

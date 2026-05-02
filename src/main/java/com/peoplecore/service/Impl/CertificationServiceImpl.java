@@ -102,7 +102,7 @@ public class CertificationServiceImpl implements CertificationService {
             String name,
             String issuer,
             String search,
-            Boolean includeDeleted // 🔥 NEW
+            Boolean includeDeleted //  NEW
     ) {
 
         // Handle null / blank inputs (VERY IMPORTANT)
