@@ -25,11 +25,14 @@ public class EmployeeLifecycleHistory {
    @JoinColumn(name = "employee_id")
    private Employee employee;
 
+   @Column(name = "old_status")
     private String oldStatus;
+   @Column(name = "new_status")
     private String newStatus;
 
     private LocalDateTime changedAt;
     private String changedBy;
 
+    @Column(name = "remarks")
     private String remarks;
 }
