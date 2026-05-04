@@ -34,7 +34,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
     @Value("${app.file.upload-dir}")
     private String uploadDir;
 
-    public EmployeesDocumentsServiceImpl(EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository auditRepository, DocumentAuditRepository documentAuditRepository) {
+    public EmployeesDocumentsServiceImpl(EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository documentAuditRepository) {
         this.employeeDocumentRepository = employeeDocumentRepository;
         this.documentVersionRepository = documentVersionRepository;
         this.documentAuditRepository = documentAuditRepository;
