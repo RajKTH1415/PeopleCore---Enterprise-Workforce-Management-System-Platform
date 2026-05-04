@@ -79,5 +79,10 @@ public interface EmployeeCertificationsRepository extends JpaRepository<Employee
 """)
     List<EmployeeCertification> findAllExpiredActiveCertifications();
 
+    Long countByExpiryDateBetweenAndIsDeletedFalse(
+            LocalDate startDate,
+            LocalDate endDate
+    );
+
 
 }

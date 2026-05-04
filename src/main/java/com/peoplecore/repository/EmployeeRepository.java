@@ -1,5 +1,6 @@
 package com.peoplecore.repository;
 
+import com.peoplecore.enums.EmploymentStatus;
 import com.peoplecore.module.Employee;
 import com.peoplecore.enums.Status;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +55,11 @@ WHERE e.employeeId = :employeeId
 
     @Query("SELECT e FROM Employee e WHERE e.manager.employeeId = :employeeId")
     List<Employee> findSubordinates(@Param("employeeId") String employeeId);
+
+
+    Long countByIsDeletedFalse();
+
+    Long countByEmploymentStatusAndIsDeletedFalse(EmploymentStatus status);
 
 
 

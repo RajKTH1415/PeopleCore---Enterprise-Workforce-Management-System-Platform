@@ -4,6 +4,7 @@ import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.EmploymentStatus;
 import com.peoplecore.enums.Status;
 import com.peoplecore.module.*;
+import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.repository.EmployeeLifecycleHistoryRepository;
 import com.peoplecore.repository.EmployeeRepository;
 import com.peoplecore.repository.UserRepository;
@@ -22,14 +23,41 @@ import java.util.stream.Collectors;
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
+    private final EmployeeCertificationsRepository employeeCertificationRepository;
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final EmployeeLifecycleHistoryRepository employeeLifecycleHistoryRepository;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, UserRepository userRepository, EmployeeLifecycleHistoryRepository employeeLifecycleHistoryRepository) {
+    public EmployeeServiceImpl(EmployeeCertificationsRepository employeeCertificationsRepository, EmployeeCertificationsRepository employeeCertificationRepository, EmployeeRepository employeeRepository, UserRepository userRepository, EmployeeLifecycleHistoryRepository employeeLifecycleHistoryRepository) {
+        this.employeeCertificationRepository = employeeCertificationRepository;
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
         this.employeeLifecycleHistoryRepository = employeeLifecycleHistoryRepository;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeDashboardResponse getEmployeeDashboard() {
+
+        LocalDate today = LocalDate.now();
+        LocalDate next30Days = today.plusDays(30);
+
+        return EmployeeDashboardResponse.builder()
+                .totalEmployees(
+                        employeeRepository.countByIsDeletedFalse())
+                .active(employeeRepository.countByEmploymentStatusAndIsDeletedFalse(EmploymentStatus.ONBOARDED))
+
+                .onProbation(employeeRepository.countByEmploymentStatusAndIsDeletedFalse(EmploymentStatus.PROBATION))
+
+                .onNotice(employeeRepository.countByEmploymentStatusAndIsDeletedFalse(EmploymentStatus.NOTICE_PERIOD))
+
+                .terminated(employeeRepository.countByEmploymentStatusAndIsDeletedFalse(EmploymentStatus.TERMINATED))
+                .expiringCertifications(
+                        employeeCertificationRepository
+                                .countByExpiryDateBetweenAndIsDeletedFalse(
+                                        today,
+                                        next30Days))
+                .build();
     }
 
     @Override
@@ -228,7 +256,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new RuntimeException("Employee already deleted with ID: " + employeeId);
         }
 
-        employee.setStatus(Status.DELETED);
+        employee.setStatus(Status.INACTIVE);
+        employee.setIsDeleted(true);
+        employee.setEmploymentStatus(EmploymentStatus.TERMINATED);
         employee.setUpdatedDate(LocalDateTime.now());
         employee.setUpdatedBy("SYSTEM");
 

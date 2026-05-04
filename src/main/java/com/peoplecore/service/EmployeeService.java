@@ -1,5 +1,6 @@
 package com.peoplecore.service;
 import com.peoplecore.dto.request.*;
+import com.peoplecore.dto.response.EmployeeDashboardResponse;
 import com.peoplecore.dto.response.EmployeeHierarchyResponse;
 import com.peoplecore.dto.response.EmployeeResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -8,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface EmployeeService {
+
+
+
+    EmployeeDashboardResponse getEmployeeDashboard();
 
     EmployeeResponse createEmployee(EmployeeRequest request);
 

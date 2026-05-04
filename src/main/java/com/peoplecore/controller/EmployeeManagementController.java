@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.*;
+import com.peoplecore.dto.response.EmployeeDashboardResponse;
 import com.peoplecore.dto.response.EmployeeHierarchyResponse;
 import com.peoplecore.dto.response.EmployeeResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -28,6 +29,16 @@ public class EmployeeManagementController {
         EmployeeResponse employeeResponse = employeeService.createEmployee(employeeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.OK.value(), "Employee created successfully", httpServletRequest.getRequestURI(), employeeResponse));
     }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<EmployeeDashboardResponse>>
+    getEmployeeDashboard(HttpServletRequest httpServletRequest) {
+
+        EmployeeDashboardResponse response =
+                employeeService.getEmployeeDashboard();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Employee dashboard fetched successfully",httpServletRequest.getRequestURI(), response));
+    }
+
     @PostMapping("/onboard")
     public ResponseEntity<ApiResponse<EmployeeResponse>> onboardEmployee(@RequestBody EmployeeOnboardRequest employeeOnboardRequest , HttpServletRequest httpServletRequest) {
         EmployeeResponse employeeResponse = employeeService.onboardEmployee(employeeOnboardRequest);

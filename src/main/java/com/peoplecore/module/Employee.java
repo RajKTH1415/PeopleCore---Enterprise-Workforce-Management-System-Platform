@@ -56,6 +56,9 @@ public class Employee  extends Auditable implements Serializable {
     @Column(name = "status")
     private Status status = Status.ACTIVE;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "employment_status")
