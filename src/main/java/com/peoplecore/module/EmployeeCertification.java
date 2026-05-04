@@ -54,10 +54,6 @@ public class EmployeeCertification extends Auditable implements Serializable {
     @Column(length = 1000)
     private String verificationNotes;
 
-//    @JdbcTypeCode(SqlTypes.BINARY)
-//    @Column(name = "certificate_file")
-//    private byte[] certificateFile;
-
     @Column(name = "file_url")
     private String fileUrl;
 

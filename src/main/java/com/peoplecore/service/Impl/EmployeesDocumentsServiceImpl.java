@@ -44,15 +44,15 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
     @Override
     public DocumentResponse uploadDocument(Long employeeId, MultipartFile file, String documentType, String category, String title, String description, String documentNumber, LocalDate issueDate, LocalDate expiryDate, Boolean isPrimary, List<String> tags, HttpServletRequest request) {
         try {
-            // ✅ 1. Validate file
+            //  1. Validate file
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
 
-            // ✅ 2. Generate document ID
+            //  2. Generate document ID
             String documentId = "DOC_" + UUID.randomUUID().toString().substring(0, 8);
 
-            // ✅ 3. Save file locally
+            //  3. Save file locally
             String originalFileName = file.getOriginalFilename();
             String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
             String storageFileName = documentId + extension;
@@ -69,7 +69,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             String fileUrl = filePath.toString();
             String fileHash = DigestUtils.sha256Hex(file.getInputStream());
 
-            // ✅ 5. Save into employee_documents
+            //  5. Save into employee_documents
             EmployeeDocument doc = EmployeeDocument.builder()
                     .employeeId(employeeId)
                     .documentId(documentId)
@@ -93,7 +93,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             employeeDocumentRepository.save(doc);
 
-            // ✅ 6. Save version history
+            //  6. Save version history
             DocumentVersionHistory version = DocumentVersionHistory.builder()
                     .documentRefId(doc.getId())
                     .documentId(documentId)
