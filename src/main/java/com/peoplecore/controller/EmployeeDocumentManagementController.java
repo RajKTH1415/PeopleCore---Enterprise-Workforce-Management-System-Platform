@@ -2,9 +2,11 @@ package com.peoplecore.controller;
 
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
+import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -72,5 +74,48 @@ public class EmployeeDocumentManagementController {
                 employeesDocumentsService.getDocumentById(employeeId, documentId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully",httpServletRequest.getRequestURI(), response));
+    }
+    @GetMapping("/{employeeId}/documents")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentResponse>>> getAllDocuments(
+            @PathVariable Long employeeId,
+
+            @RequestParam(required = false) String documentType,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String verificationStatus,
+
+            @RequestParam(required = false) Boolean isDeleted,
+            @RequestParam(required = false) Boolean isPrimary,
+
+            @RequestParam(required = false) LocalDate expiryBefore,
+            @RequestParam(required = false) LocalDate expiryAfter,
+            @RequestParam(required = false) Boolean expired,
+
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<String> tags,
+
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "uploadedAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir, HttpServletRequest httpServletRequest
+    ) {
+
+        PageResponse<DocumentResponse> response =
+                employeesDocumentsService.getAllDocuments(
+                        employeeId,
+                        documentType,
+                        category,
+                        verificationStatus,
+                        isDeleted,
+                        isPrimary,
+                        expiryBefore,
+                        expiryAfter,
+                        expired,
+                        search,
+                        tags,
+                        page,
+                        size,
+                        sortBy,
+                        sortDir);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 }

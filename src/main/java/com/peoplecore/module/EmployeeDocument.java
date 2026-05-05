@@ -80,5 +80,9 @@ public class EmployeeDocument {
     @Column(name = "updated_date")
     private LocalDateTime updatedAt;
 
+    @Column(name = "verification_status")
+    private String verificationStatus;
+
+
     private String status;
 }

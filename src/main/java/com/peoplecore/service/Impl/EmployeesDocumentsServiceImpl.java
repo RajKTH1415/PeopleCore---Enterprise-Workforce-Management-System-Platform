@@ -1,18 +1,22 @@
 package com.peoplecore.service.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.peoplecore.dto.response.DocumentAuditDto;
-import com.peoplecore.dto.response.DocumentDetailsResponse;
-import com.peoplecore.dto.response.DocumentResponse;
-import com.peoplecore.dto.response.DocumentVersionDto;
+import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.AuditAction;
 import com.peoplecore.module.*;
 import com.peoplecore.repository.*;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.service.OcrService;
 import com.peoplecore.service.SkillParserService;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -434,6 +438,170 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         }
 
     }
+
+    @Override
+    public PageResponse<DocumentResponse> getAllDocuments(
+            Long employeeId,
+            String documentType,
+            String category,
+            String verificationStatus,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            LocalDate expiryBefore,
+            LocalDate expiryAfter,
+            Boolean expired,
+            String search,
+            List<String> tags,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+
+        Sort sort = sortDir.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<EmployeeDocument> spec = buildSpecification(
+                employeeId,
+                documentType,
+                category,
+                verificationStatus,
+                isDeleted,
+                isPrimary,
+                expiryBefore,
+                expiryAfter,
+                expired,
+                search,
+                tags
+        );
+
+        Page<EmployeeDocument> result = employeeDocumentRepository.findAll(spec, pageable);
+
+        List<DocumentResponse> content = result.getContent()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+
+        return PageResponse.<DocumentResponse>builder()
+                .content(content)
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .numberOfElements(result.getNumberOfElements())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .hasNext(result.hasNext())
+                .hasPrevious(result.hasPrevious())
+                .sortBy(sortBy)
+                .direction(sortDir)
+                .build();
+    }
+
+
+
+
+
+
+    private Specification<EmployeeDocument> buildSpecification(
+            Long employeeId,
+            String documentType,
+            String category,
+            String verificationStatus,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            LocalDate expiryBefore,
+            LocalDate expiryAfter,
+            Boolean expired,
+            String search,
+            List<String> tags
+    ) {
+
+        return (root, query, cb) -> {
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("employeeId"), employeeId));
+
+            if (documentType != null)
+                predicates.add(cb.equal(root.get("documentType"), documentType));
+
+            if (category != null)
+                predicates.add(cb.equal(root.get("documentCategory"), category));
+
+            if (verificationStatus != null)
+                predicates.add(cb.equal(root.get("verificationStatus"), verificationStatus));
+
+            if (Boolean.TRUE.equals(isPrimary))
+                predicates.add(cb.equal(root.get("isPrimary"), true));
+
+            if (Boolean.TRUE.equals(isDeleted))
+                predicates.add(cb.equal(root.get("isDeleted"), true));
+
+            if (expiryBefore != null)
+                predicates.add(cb.lessThanOrEqualTo(root.get("expiryDate"), expiryBefore));
+
+            if (expiryAfter != null)
+                predicates.add(cb.greaterThanOrEqualTo(root.get("expiryDate"), expiryAfter));
+
+            if (Boolean.TRUE.equals(expired))
+                predicates.add(cb.lessThan(root.get("expiryDate"), LocalDate.now()));
+
+            if (search != null && !search.isEmpty()) {
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), "%" + search.toLowerCase() + "%"),
+                        cb.like(cb.lower(root.get("fileName")), "%" + search.toLowerCase() + "%")
+                ));
+            }
+
+            if (tags != null && !tags.isEmpty()) {
+                List<Predicate> tagPredicates = new ArrayList<>();
+
+                for (String tag : tags) {
+                    tagPredicates.add(cb.like(
+                            cb.function("array_to_string", String.class,
+                                    root.get("tags"),
+                                    cb.literal(",")
+                            ),
+                            "%" + tag.toLowerCase() + "%"
+                    ));
+                }
+
+                predicates.add(cb.or(tagPredicates.toArray(new Predicate[0])));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+
+
+    private DocumentResponse mapToResponse(EmployeeDocument doc) {
+        return DocumentResponse.builder()
+                .documentId(doc.getDocumentId())
+                .employeeId(doc.getEmployeeId())
+                .documentType(doc.getDocumentType())
+                .category(doc.getDocumentCategory())
+                .title(doc.getTitle())
+                .fileName(doc.getFileName())
+                .fileUrl(doc.getFileUrl())
+                .fileSize(doc.getFileSize())
+                .version(doc.getVersion())
+                .status(doc.getStatus())
+                .verificationStatus(doc.getVerificationStatus())
+                .issueDate(doc.getIssueDate())
+                .expiryDate(doc.getExpiryDate())
+                .isPrimary(doc.getIsPrimary())
+                .tags(doc.getTags() != null ? new ArrayList<>(List.of(doc.getTags())) : null)
+                .uploadedAt(doc.getUploadedAt())
+                .updatedAt(doc.getUpdatedAt())
+                .build();
+    }
+
+
+
     private Map<String, String> generateOldNewDiff(String oldJson, String newJson) {
         try {
             if (oldJson == null || newJson == null) return Map.of();

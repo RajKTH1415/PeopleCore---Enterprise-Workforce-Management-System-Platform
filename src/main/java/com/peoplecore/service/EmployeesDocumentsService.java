@@ -2,7 +2,9 @@ package com.peoplecore.service;
 
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
+import com.peoplecore.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -29,5 +31,22 @@ public interface EmployeesDocumentsService {
             Boolean isPrimary,
             List<String> tags,
             HttpServletRequest request
+    );
+    PageResponse<DocumentResponse> getAllDocuments(
+            Long employeeId,
+            String documentType,
+            String category,
+            String verificationStatus,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            LocalDate expiryBefore,
+            LocalDate expiryAfter,
+            Boolean expired,
+            String search,
+            List<String> tags,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
     );
 }
