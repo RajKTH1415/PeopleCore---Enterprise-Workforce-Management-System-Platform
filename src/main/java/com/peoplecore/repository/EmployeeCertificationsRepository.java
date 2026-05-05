@@ -1,5 +1,7 @@
 package com.peoplecore.repository;
 
+import com.peoplecore.module.Certification;
+import com.peoplecore.module.Employee;
 import com.peoplecore.module.EmployeeCertification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -85,4 +87,5 @@ public interface EmployeeCertificationsRepository extends JpaRepository<Employee
     );
 
 
+    Optional<EmployeeCertification> findByEmployeeAndCertification(Employee employee, Certification certification);
 }

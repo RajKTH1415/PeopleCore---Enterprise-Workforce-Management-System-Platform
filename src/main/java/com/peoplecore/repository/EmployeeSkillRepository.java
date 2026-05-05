@@ -187,4 +187,6 @@ public interface EmployeeSkillRepository extends JpaRepository<EmployeeSkill, Lo
             @Param("proficiencyLevels") List<ProficiencyLevel> proficiencyLevels,
             Pageable pageable
     );
+
+    Optional<EmployeeSkill> findByEmployeeIdAndSkillNameIgnoreCase(Long employeeId, String skillName);
 }

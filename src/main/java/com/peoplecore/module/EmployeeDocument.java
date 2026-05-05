@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,27 +23,62 @@ public class EmployeeDocument {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long employeeId;
+    @Column(name = "document_id", unique = true, nullable = false)
     private String documentId;
+
+    @Column(name = "employee_id")
+    private Long employeeId;
+
+    @Column(name = "document_type")
     private String documentType;
+
+    @Column(name = "document_category")
     private String documentCategory;
+
     private String title;
     private String description;
 
+    @Column(name = "file_name")
     private String fileName;
+
+    @Column(name = "file_url")
     private String fileUrl;
+
+    @Column(name = "file_type")
     private String fileType;
+
+    @Column(name = "file_size")
     private Long fileSize;
+
+    @Column(name = "file_hash")
     private String fileHash;
 
-    private String documentNumber;
-    private LocalDate issueDate;
-    private LocalDate expiryDate;
-
+    @Column(name = "is_primary")
     private Boolean isPrimary;
+
+    @Column(name = "tags")
+    @JdbcTypeCode(SqlTypes.ARRAY)
     private String[] tags;
 
+    @Column(name = "document_number")
+    private String documentNumber;
+
+    @Column(name = "issue_date")
+    private LocalDate issueDate;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
+    private Integer version;
+
+    @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
+    @Column(name = "created_by")
     private String createdBy;
+
+    @Column(name = "updated_date")
+    private LocalDateTime updatedAt;
+
+    private String status;
 }

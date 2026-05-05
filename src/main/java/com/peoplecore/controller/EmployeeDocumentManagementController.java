@@ -49,4 +49,19 @@ public class EmployeeDocumentManagementController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Document uploaded successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    /* its not use*/
+
+    @DeleteMapping("/all")
+    public ResponseEntity<ApiResponse<String>> deleteAllDocuments(
+            HttpServletRequest request
+    ) {
+
+        employeesDocumentsService.deleteAllDocumentsSystem();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "All documents deleted successfully",
+                        request.getRequestURI(), null)
+        );
+    }
 }

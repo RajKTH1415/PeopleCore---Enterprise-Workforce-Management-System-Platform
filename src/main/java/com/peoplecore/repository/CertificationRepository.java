@@ -59,4 +59,5 @@ Page<Certification> findCertificationsWithFilters(
 );
 
 
+    Optional<Certification> findByNameIgnoreCase(String title);
 }

@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface EmployeesDocumentsService {
 
+    //void deleteAllDocuments(Long employeeId, boolean hardDelete, HttpServletRequest request);
+
+    void deleteAllDocumentsSystem();
+
 
     DocumentResponse uploadDocument(
             Long employeeId,
