@@ -29,6 +29,8 @@ public class EmployeeDocument {
     @Column(name = "employee_id")
     private Long employeeId;
 
+
+
     @Column(name = "document_type")
     private String documentType;
 
@@ -82,6 +84,9 @@ public class EmployeeDocument {
 
     @Column(name = "verification_status")
     private String verificationStatus;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 
 
     private String status;

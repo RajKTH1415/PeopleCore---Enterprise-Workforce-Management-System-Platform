@@ -216,6 +216,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             Optional<EmployeeDocument> existingDocOpt =
                     employeeDocumentRepository.findByEmployeeIdAndFileHash(employeeId, fileHash);
 
+            Employee employeeRef = employeeRepository.getReferenceById(employeeId);
+
             int version = 1;
             EmployeeDocument doc;
             String oldValueJson = null;
@@ -428,9 +430,14 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                     .fileName(doc.getFileName())
                     .fileSize(file.getSize())
                     .version(version)
+                    .issueDate(issueDate)
+                    .isPrimary(true)
+                    .expiryDate(doc.getExpiryDate())
+                    .tags(tags)
                     .status("ACTIVE")
                     .verificationStatus("PENDING")
                     .uploadedAt(doc.getUploadedAt())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
         } catch (Exception e) {
@@ -458,9 +465,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             String sortDir
     ) {
 
-        Sort sort = sortDir.equalsIgnoreCase("ASC")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC,
+                sortBy
+        );
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
@@ -501,11 +509,6 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .build();
     }
 
-
-
-
-
-
     private Specification<EmployeeDocument> buildSpecification(
             Long employeeId,
             String documentType,
@@ -524,7 +527,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("employeeId"), employeeId));
+            // ✅ FIXED: correct field usage
+            predicates.add(cb.equal(root.get("employee").get("id"), employeeId));
+
+            predicates.add(cb.equal(root.get("status"), "ACTIVE"));
 
             if (documentType != null)
                 predicates.add(cb.equal(root.get("documentType"), documentType));
@@ -536,10 +542,12 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 predicates.add(cb.equal(root.get("verificationStatus"), verificationStatus));
 
             if (Boolean.TRUE.equals(isPrimary))
-                predicates.add(cb.equal(root.get("isPrimary"), true));
+                predicates.add(cb.isTrue(root.get("isPrimary")));
 
-            if (Boolean.TRUE.equals(isDeleted))
-                predicates.add(cb.equal(root.get("isDeleted"), true));
+            if (isDeleted != null)
+                predicates.add(cb.equal(root.get("isDeleted"), isDeleted));
+            else
+                predicates.add(cb.isFalse(root.get("isDeleted")));
 
             if (expiryBefore != null)
                 predicates.add(cb.lessThanOrEqualTo(root.get("expiryDate"), expiryBefore));
@@ -550,10 +558,11 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             if (Boolean.TRUE.equals(expired))
                 predicates.add(cb.lessThan(root.get("expiryDate"), LocalDate.now()));
 
-            if (search != null && !search.isEmpty()) {
+            if (search != null && !search.isBlank()) {
+                String like = "%" + search.toLowerCase() + "%";
                 predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("title")), "%" + search.toLowerCase() + "%"),
-                        cb.like(cb.lower(root.get("fileName")), "%" + search.toLowerCase() + "%")
+                        cb.like(cb.lower(root.get("title")), like),
+                        cb.like(cb.lower(root.get("fileName")), like)
                 ));
             }
 
@@ -572,12 +581,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
                 predicates.add(cb.or(tagPredicates.toArray(new Predicate[0])));
             }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
-
-
-
     private DocumentResponse mapToResponse(EmployeeDocument doc) {
         return DocumentResponse.builder()
                 .documentId(doc.getDocumentId())
@@ -594,12 +601,11 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .issueDate(doc.getIssueDate())
                 .expiryDate(doc.getExpiryDate())
                 .isPrimary(doc.getIsPrimary())
-                .tags(doc.getTags() != null ? new ArrayList<>(List.of(doc.getTags())) : null)
+                .tags(doc.getTags() != null ? Arrays.asList(doc.getTags()) : null)
                 .uploadedAt(doc.getUploadedAt())
                 .updatedAt(doc.getUpdatedAt())
                 .build();
     }
-
 
 
     private Map<String, String> generateOldNewDiff(String oldJson, String newJson) {

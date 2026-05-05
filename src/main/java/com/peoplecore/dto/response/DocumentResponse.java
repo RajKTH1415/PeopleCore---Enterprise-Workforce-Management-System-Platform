@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @Builder
 public class DocumentResponse {
+
     private String documentId;
     private Long employeeId;
     private String documentType;
