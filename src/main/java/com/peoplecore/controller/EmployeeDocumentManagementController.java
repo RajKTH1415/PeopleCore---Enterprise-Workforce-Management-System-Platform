@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 
+import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.util.ApiResponse;
@@ -39,8 +40,7 @@ public class EmployeeDocumentManagementController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,
             @RequestParam(required = false, defaultValue = "false") Boolean isPrimary,
             @RequestParam(required = false) List<String> tags,
-            HttpServletRequest httpServletRequest
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         DocumentResponse response = employeesDocumentsService.uploadDocument(
                 employeeId, file, documentType, category, title,
@@ -51,17 +51,26 @@ public class EmployeeDocumentManagementController {
     }
 
     /* its not use*/
-
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<String>> deleteAllDocuments(
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         employeesDocumentsService.deleteAllDocumentsSystem();
 
         return ResponseEntity.ok(
                 ApiResponse.success(200, "All documents deleted successfully",
-                        request.getRequestURI(), null)
-        );
+                        request.getRequestURI(), null));
+    }
+    @GetMapping("/{employeeId}/documents/{documentId}")
+    public ResponseEntity<ApiResponse<DocumentDetailsResponse>> getDocumentById(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        DocumentDetailsResponse response =
+                employeesDocumentsService.getDocumentById(employeeId, documentId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully",httpServletRequest.getRequestURI(), response));
     }
 }

@@ -1,5 +1,6 @@
 package com.peoplecore.service;
 
+import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,9 +10,10 @@ import java.util.List;
 
 public interface EmployeesDocumentsService {
 
-    //void deleteAllDocuments(Long employeeId, boolean hardDelete, HttpServletRequest request);
-
+    /*just for testing*/
     void deleteAllDocumentsSystem();
+
+    DocumentDetailsResponse getDocumentById(Long employeeId, String documentId);
 
 
     DocumentResponse uploadDocument(

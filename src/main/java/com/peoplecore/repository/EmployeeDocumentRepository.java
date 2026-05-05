@@ -12,4 +12,7 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
     Optional<EmployeeDocument> findByEmployeeIdAndFileHash(Long employeeId, String fileHash);
 
 
+    Optional<EmployeeDocument> findByEmployeeIdAndDocumentId(Long employeeId, String documentId);
+
+
 }

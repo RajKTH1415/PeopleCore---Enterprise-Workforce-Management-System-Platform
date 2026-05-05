@@ -1,7 +1,10 @@
 package com.peoplecore.service.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.peoplecore.dto.response.DocumentAuditDto;
+import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
+import com.peoplecore.dto.response.DocumentVersionDto;
 import com.peoplecore.enums.AuditAction;
 import com.peoplecore.module.*;
 import com.peoplecore.repository.*;
@@ -58,6 +61,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         this.employeeDocumentCertificationMappingRepository = employeeDocumentCertificationMappingRepository;
     }
 
+    /*just for testing*/
     @Override
     public void deleteAllDocumentsSystem() {
 
@@ -65,26 +69,106 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
         for (EmployeeDocument doc : documents) {
 
-            // 🔥 delete file
+            //  delete file
             try {
                 if (doc.getFileUrl() != null) {
                     Files.deleteIfExists(Paths.get(doc.getFileUrl()));
                 }
             } catch (Exception ignored) {}
 
-            // 🔥 delete mappings first (FK safe)
+            //  delete mappings first (FK safe)
             employeeDocumentSkillMappingRepository.deleteByDocumentId(doc.getId());
             employeeDocumentCertificationMappingRepository.deleteByDocumentId(doc.getId());
 
-            // 🔥 delete version history
+            //  delete version history
             documentVersionRepository.deleteByDocumentRefId(doc.getId());
 
-            // 🔥 delete audit logs
+            //  delete audit logs
             documentAuditRepository.deleteByDocumentId(doc.getId());
         }
 
-        // 🔥 finally delete main table
+        // finally delete main table
         employeeDocumentRepository.deleteAll();
+    }
+
+    @Override
+    public DocumentDetailsResponse getDocumentById(Long employeeId, String documentId) {
+
+        // 1. Fetch document
+        EmployeeDocument doc = employeeDocumentRepository
+                .findByEmployeeIdAndDocumentId(employeeId, documentId)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+
+        //  2. Fetch version history
+        List<DocumentVersionHistory> versions = documentVersionRepository
+                .findByDocumentRefIdOrderByVersionDesc(doc.getId());
+
+        List<DocumentVersionDto> versionDtos = versions.stream()
+                .map(v -> DocumentVersionDto.builder()
+                        .version(v.getVersion())
+                        .fileName(v.getFileName())
+                        .fileSize(v.getFileSize())
+                        .storageKey(v.getStorageKey())
+                        .uploadedBy(v.getUploadedBy())
+                        .versionComment(v.getVersionComment())
+                        .uploadedAt(v.getUploadedAt())
+                        .build())
+                .toList();
+
+        //  3. Fetch audit logs
+        List<EmployeeDocumentAudit> audits = documentAuditRepository
+                .findByDocumentIdOrderByPerformedAtDesc(doc.getId());
+
+        List<DocumentAuditDto> auditDtos = audits.stream()
+                .map(a -> DocumentAuditDto.builder()
+                        .action(a.getAction())
+                        .actionType(a.getActionType())
+                        .accessType(a.getAccessType())
+                        .remarks(a.getRemarks())
+                        .performedBy(a.getPerformedBy())
+                        .performedAt(a.getPerformedAt())
+                        .oldValue(parseJson(a.getOldValue()))
+                        .newValue(parseJson(a.getNewValue()))
+                        .build())
+                .toList();
+
+        // 4. Build response
+        return DocumentDetailsResponse.builder()
+                .documentId(doc.getDocumentId())
+                .employeeId(employeeId)
+                .documentType(doc.getDocumentType())
+                .category(doc.getDocumentCategory())
+                .title(doc.getTitle())
+                .description(doc.getDescription())
+
+                .fileName(doc.getFileName())
+                .fileUrl(doc.getFileUrl())
+                .fileSize(doc.getFileSize())
+
+                .version(doc.getVersion())
+                .status(doc.getStatus())
+                .verificationStatus("PENDING") // or from DB
+
+                .issueDate(doc.getIssueDate())
+                .expiryDate(doc.getExpiryDate())
+
+                .isPrimary(doc.getIsPrimary())
+                .tags(doc.getTags() != null ? Arrays.asList(doc.getTags()) : null)
+
+                .uploadedAt(doc.getUploadedAt())
+                .updatedAt(doc.getUpdatedAt())
+
+                .versions(versionDtos)
+                .audits(auditDtos)
+                .build();
+    }
+    private Object parseJson(String json) {
+        try {
+            if (json == null) return null;
+            return objectMapper.readValue(json, Object.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
@@ -103,7 +187,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
         try {
 
-            // 🔒 1. FILE VALIDATION
+            // 1. FILE VALIDATION
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
@@ -118,10 +202,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 throw new RuntimeException("Invalid file type. Only PDF/JPG allowed");
             }
 
-            // 🔐 2. READ FILE BYTES (IMPORTANT FIX)
+            //  2. READ FILE BYTES (IMPORTANT FIX)
             byte[] fileBytes = file.getBytes();
 
-            // 🔁 3. GENERATE HASH
+            //  3. GENERATE HASH
             String fileHash = DigestUtils.sha256Hex(fileBytes);
 
             // ⚡ 4. DUPLICATE CHECK
@@ -134,10 +218,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             if (existingDocOpt.isPresent()) {
 
-                // 🔁 UPDATE FLOW
+                // UPDATE FLOW
                 doc = existingDocOpt.get();
 
-                // ✅ capture OLD state BEFORE change
+                //  capture OLD state BEFORE change
                 oldValueJson = objectMapper.writeValueAsString(doc);
 
                 version = doc.getVersion() + 1;
@@ -147,7 +231,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             } else {
 
-                // 🆕 NEW DOCUMENT
+                //  NEW DOCUMENT
                 String documentId = "DOC_" + UUID.randomUUID().toString().substring(0, 8);
 
                 doc = EmployeeDocument.builder()
@@ -172,7 +256,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                         .build();
             }
 
-            // 📁 5. STORAGE STRUCTURE
+            //  5. STORAGE STRUCTURE
             String baseDir = uploadDir + "/documents/" + employeeId + "/";
             Files.createDirectories(Paths.get(baseDir));
 
@@ -203,7 +287,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 versionComment = "File replaced with new version";
             }
 
-            // 📜 6. VERSION HISTORY
+            //  6. VERSION HISTORY
             DocumentVersionHistory versionHistory = DocumentVersionHistory.builder()
                     .documentRefId(doc.getId())
                     .documentId(doc.getDocumentId())
@@ -218,14 +302,14 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             documentVersionRepository.save(versionHistory);
 
-            // 🧠 7. CONDITIONAL LOGIC
+            //  7. CONDITIONAL LOGIC
             if ("CERTIFICATE".equalsIgnoreCase(documentType)) {
 
-                // 🔍 1. Fetch employee
+                //  1. Fetch employee
                 Employee employee = employeeRepository.findById(employeeId)
                         .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-                // 🔍 2. Fetch certification (by title)
+                //  2. Fetch certification (by title)
                 Certification certification = certificationRepository
                         .findByNameIgnoreCase(title)
                         .orElseGet(() -> {
@@ -236,7 +320,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                             return certificationRepository.save(newCert);
                         });
 
-                // 🔍 3. Find or create employee_certification
+                //  3. Find or create employee_certification
                 EmployeeCertification employeeCertification =
                         employeeCertificationsRepository
                                 .findByEmployeeAndCertification(employee, certification)
