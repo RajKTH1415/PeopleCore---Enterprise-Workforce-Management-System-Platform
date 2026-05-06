@@ -7,7 +7,6 @@ import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,7 +52,7 @@ public class EmployeeDocumentManagementController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Document uploaded successfully", httpServletRequest.getRequestURI(), response));
     }
 
-    /* its not use*/
+    /* it's not use only for delete all data from documents table */
     @DeleteMapping("/all")
     public ResponseEntity<ApiResponse<String>> deleteAllDocuments(
             HttpServletRequest request) {
@@ -68,8 +67,7 @@ public class EmployeeDocumentManagementController {
     public ResponseEntity<ApiResponse<DocumentDetailsResponse>> getDocumentById(
             @PathVariable Long employeeId,
             @PathVariable String documentId,
-            HttpServletRequest httpServletRequest
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         DocumentDetailsResponse response =
                 employeesDocumentsService.getDocumentById(employeeId, documentId);
@@ -97,8 +95,7 @@ public class EmployeeDocumentManagementController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "uploadedAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDir, HttpServletRequest httpServletRequest
-    ) {
+            @RequestParam(defaultValue = "DESC") String sortDir, HttpServletRequest httpServletRequest) {
 
         PageResponse<DocumentResponse> response =
                 employeesDocumentsService.getAllDocuments(
@@ -137,8 +134,7 @@ public class EmployeeDocumentManagementController {
             @RequestParam(defaultValue = "uploadedAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
 
-            HttpServletRequest httpServletRequest
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         PageResponse<DocumentResponse> response =
                 employeesDocumentsService.getDocuments(
@@ -154,8 +150,8 @@ public class EmployeeDocumentManagementController {
                         page,
                         size,
                         sortBy,
-                        sortDir
-                );
+                        sortDir);
+
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully",httpServletRequest.getRequestURI(), response));
     }
 
@@ -177,9 +173,27 @@ public class EmployeeDocumentManagementController {
         DocumentResponse response = employeesDocumentsService.updateDocumentMetadata(
                 employeeId,
                 documentId,
-                request
-        );
+                request);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document metadata updated successfully", httpServletRequest.getRequestURI(), response));
+    }
+
+    @DeleteMapping("/{employeeId}/documents/{documentId}")
+    public ResponseEntity<ApiResponse<String>> softDeleteDocument(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            HttpServletRequest request
+    ) {
+
+        employeesDocumentsService.deleteDocument(employeeId, documentId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        200,
+                        "Document deleted successfully",
+                        request.getRequestURI(),
+                        "Deleted"
+                )
+        );
     }
 }

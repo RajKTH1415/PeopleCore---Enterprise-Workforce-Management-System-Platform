@@ -74,4 +74,6 @@ public interface EmployeesDocumentsService {
             String documentId,
             UpdateDocumentRequest request
     );
+
+    void deleteDocument(Long employeeId, String documentId);
 }

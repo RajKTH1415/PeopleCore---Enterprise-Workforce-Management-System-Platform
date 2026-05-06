@@ -27,4 +27,18 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
     void clearPrimaryForEmployee(@Param("employeeId") Long employeeId);
 
 
+    @Modifying
+    @Query("""
+    UPDATE EmployeeDocument d
+    SET d.isDeleted = true,
+        d.isPrimary = false,
+        d.updatedAt = CURRENT_TIMESTAMP
+    WHERE d.documentId = :documentId
+    AND d.employeeId = :employeeId
+    AND (d.isDeleted = false OR d.isDeleted IS NULL)
+""")
+    int softDelete(@Param("employeeId") Long employeeId,
+                   @Param("documentId") String documentId);
+
+
 }

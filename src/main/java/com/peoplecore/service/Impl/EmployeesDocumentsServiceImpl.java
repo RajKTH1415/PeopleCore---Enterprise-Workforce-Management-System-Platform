@@ -646,6 +646,39 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         return mapToResponse(saved);
     }
 
+    @Override
+    @Transactional
+    public void deleteDocument(Long employeeId, String documentId) {
+
+        EmployeeDocument doc = employeeDocumentRepository
+                .findByDocumentId(documentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Document not found: " + documentId)
+                );
+
+        // ✅ Ownership validation
+        if (!doc.getEmployeeId().equals(employeeId)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        // ✅ Already deleted check
+        if (Boolean.TRUE.equals(doc.getIsDeleted())) {
+            throw new RuntimeException("Document already deleted");
+        }
+
+        // ✅ Soft delete
+        doc.setIsDeleted(true);
+        doc.setUpdatedAt(LocalDateTime.now());
+        doc.setVersion(doc.getVersion() + 1);
+
+        // Optional: if primary → remove primary flag
+        if (Boolean.TRUE.equals(doc.getIsPrimary())) {
+            doc.setIsPrimary(false);
+        }
+
+        employeeDocumentRepository.save(doc);
+    }
+
     private Specification<EmployeeDocument> buildSpecification(
             Long employeeId,
             String type,
