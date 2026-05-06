@@ -9,7 +9,7 @@ public enum AuditAction {
     REPLACE,
     DELETE,
     VERIFY,
-   REJECT,
+    REJECT,
     RESTORE,
     EXPIRE
 }

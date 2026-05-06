@@ -118,4 +118,43 @@ public class EmployeeDocumentManagementController {
                         sortDir);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<DocumentResponse>>> getDocuments(
+            @RequestParam(required = false) Long employeeId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String verificationStatus,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Boolean isDeleted,
+            @RequestParam(required = false) Boolean isPrimary,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<String> tags,
+
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "uploadedAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
+
+            HttpServletRequest httpServletRequest
+    ) {
+
+        PageResponse<DocumentResponse> response =
+                employeesDocumentsService.getDocuments(
+                        employeeId,
+                        type,
+                        status,
+                        verificationStatus,
+                        category,
+                        isDeleted,
+                        isPrimary,
+                        search,
+                        tags,
+                        page,
+                        size,
+                        sortBy,
+                        sortDir
+                );
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully",httpServletRequest.getRequestURI(), response));
+    }
 }

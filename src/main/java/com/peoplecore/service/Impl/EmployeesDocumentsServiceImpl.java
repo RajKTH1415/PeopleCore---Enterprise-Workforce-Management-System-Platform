@@ -257,6 +257,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                         .isPrimary(isPrimary)
                         .tags(tags != null ? tags.toArray(new String[0]) : null)
                         .version(1)
+                        .status("ACTIVE")
                         .uploadedAt(LocalDateTime.now())
                         .createdBy("SYSTEM")
                         .build();
@@ -509,6 +510,157 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .build();
     }
 
+    @Override
+    public PageResponse<DocumentResponse> getDocuments(
+            Long employeeId,
+            String type,
+            String status,
+            String verificationStatus,
+            String category,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            String search,
+            List<String> tags,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+
+        // ✅ SAFE SORT
+        Set<String> allowedSortFields = Set.of(
+                "uploadedAt", "updatedAt", "fileName", "documentType"
+        );
+
+        sortBy = (sortBy == null || sortBy.isBlank()) ? "uploadedAt" : sortBy.trim();
+
+        if (sortBy.contains(",")) {
+            sortBy = sortBy.split(",")[0];
+        }
+
+        if (!allowedSortFields.contains(sortBy)) {
+            sortBy = "uploadedAt";
+        }
+
+        Sort sort = Sort.by(
+                sortDir.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC,
+                sortBy
+        );
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<EmployeeDocument> spec = buildSpecification(
+                employeeId,
+                type,
+                status,
+                verificationStatus,
+                category,
+                isDeleted,
+                isPrimary,
+                search,
+                tags
+        );
+
+        Page<EmployeeDocument> result = employeeDocumentRepository.findAll(spec, pageable);
+
+        return PageResponse.<DocumentResponse>builder()
+                .content(result.getContent().stream().map(this::mapToResponse).toList())
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .numberOfElements(result.getNumberOfElements())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .hasNext(result.hasNext())
+                .hasPrevious(result.hasPrevious())
+                .sortBy(sortBy)
+                .direction(sortDir)
+                .build();
+    }
+
+
+    private Specification<EmployeeDocument> buildSpecification(
+            Long employeeId,
+            String type,
+            String status,
+            String verificationStatus,
+            String category,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            String search,
+            List<String> tags
+    ) {
+
+        return (root, query, cb) -> {
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Employee filter
+            if (employeeId != null) {
+                predicates.add(cb.equal(root.get("employeeId"), employeeId));
+            }
+
+            // Type
+            if (type != null) {
+                predicates.add(cb.equal(root.get("documentType"), type));
+            }
+
+            // Category
+            if (category != null) {
+                predicates.add(cb.equal(root.get("documentCategory"), category));
+            }
+
+            // Status
+            if (status != null) {
+                predicates.add(cb.equal(cb.lower(root.get("status")), status.toLowerCase()));
+            }
+
+            // Verification status
+            if (verificationStatus != null) {
+                predicates.add(cb.equal(root.get("verificationStatus"), verificationStatus));
+            }
+
+            // Primary
+            if (Boolean.TRUE.equals(isPrimary)) {
+                predicates.add(cb.isTrue(root.get("isPrimary")));
+            }
+
+            // Deleted
+            if (isDeleted != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), isDeleted));
+            }
+
+            // Search
+            if (search != null && !search.isBlank()) {
+                String like = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), like),
+                        cb.like(cb.lower(root.get("fileName")), like)
+                ));
+            }
+
+            // Tags
+            if (tags != null && !tags.isEmpty()) {
+                List<Predicate> tagPredicates = new ArrayList<>();
+
+                for (String tag : tags) {
+                    tagPredicates.add(cb.like(
+                            cb.function("array_to_string", String.class,
+                                    root.get("tags"),
+                                    cb.literal(",")
+                            ),
+                            "%" + tag.toLowerCase() + "%"
+                    ));
+                }
+
+                predicates.add(cb.or(tagPredicates.toArray(new Predicate[0])));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
     private Specification<EmployeeDocument> buildSpecification(
             Long employeeId,
             String documentType,
@@ -528,9 +680,12 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             List<Predicate> predicates = new ArrayList<>();
 
             // ✅ FIXED: correct field usage
-            predicates.add(cb.equal(root.get("employee").get("id"), employeeId));
+            predicates.add(cb.equal(root.get("employeeId"), employeeId));
 
-            predicates.add(cb.equal(root.get("status"), "ACTIVE"));
+            predicates.add(cb.or(
+                    cb.isNull(root.get("status")),
+                    cb.equal(cb.lower(cb.trim(root.get("status"))), "active")
+            ));
 
             if (documentType != null)
                 predicates.add(cb.equal(root.get("documentType"), documentType));
@@ -544,10 +699,9 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             if (Boolean.TRUE.equals(isPrimary))
                 predicates.add(cb.isTrue(root.get("isPrimary")));
 
-            if (isDeleted != null)
+            if (isDeleted != null) {
                 predicates.add(cb.equal(root.get("isDeleted"), isDeleted));
-            else
-                predicates.add(cb.isFalse(root.get("isDeleted")));
+            }
 
             if (expiryBefore != null)
                 predicates.add(cb.lessThanOrEqualTo(root.get("expiryDate"), expiryBefore));

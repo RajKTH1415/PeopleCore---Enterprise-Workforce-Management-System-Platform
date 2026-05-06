@@ -89,5 +89,6 @@ public class EmployeeDocument {
     private Boolean isDeleted;
 
 
+    @Column(name = "status")
     private String status;
 }

@@ -49,4 +49,20 @@ public interface EmployeesDocumentsService {
             String sortBy,
             String sortDir
     );
+
+    PageResponse<DocumentResponse> getDocuments(
+            Long employeeId,
+            String type,
+            String status,
+            String verificationStatus,
+            String category,
+            Boolean isDeleted,
+            Boolean isPrimary,
+            String search,
+            List<String> tags,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    );
 }
