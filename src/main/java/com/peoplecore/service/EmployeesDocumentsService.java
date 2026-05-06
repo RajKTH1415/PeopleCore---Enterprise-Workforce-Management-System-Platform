@@ -65,4 +65,6 @@ public interface EmployeesDocumentsService {
             String sortBy,
             String sortDir
     );
+
+    DocumentResponse getDocumentById(String documentId);
 }

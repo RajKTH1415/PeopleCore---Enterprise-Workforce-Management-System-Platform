@@ -15,5 +15,9 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
 
     Optional<EmployeeDocument> findByEmployeeIdAndDocumentId(Long employeeId, String documentId);
 
+    Optional<EmployeeDocument> findByDocumentIdAndIsDeletedFalse(String documentId);
+
+    Optional<EmployeeDocument> findByDocumentId(String documentId);
+
 
 }

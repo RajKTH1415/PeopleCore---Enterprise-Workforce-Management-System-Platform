@@ -579,6 +579,15 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .build();
     }
 
+    @Override
+    public DocumentResponse getDocumentById(String documentId) {
+
+        EmployeeDocument document = employeeDocumentRepository
+                .findByDocumentId(documentId)
+                .orElseThrow(() -> new RuntimeException("Document not found with id: " + documentId));
+
+        return mapToResponse(document);
+    }
 
     private Specification<EmployeeDocument> buildSpecification(
             Long employeeId,

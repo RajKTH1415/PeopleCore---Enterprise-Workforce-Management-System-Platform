@@ -157,4 +157,14 @@ public class EmployeeDocumentManagementController {
                 );
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully",httpServletRequest.getRequestURI(), response));
     }
+
+    @GetMapping("/{documentId}")
+    public ResponseEntity<ApiResponse<DocumentResponse>> getDocumentById(
+            @PathVariable String documentId,
+            HttpServletRequest httpServletRequest) {
+
+        DocumentResponse response = employeesDocumentsService.getDocumentById(documentId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully", httpServletRequest.getRequestURI(), response));
+
+    }
 }
