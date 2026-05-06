@@ -648,7 +648,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
     @Override
     @Transactional
-    public void deleteDocument(Long employeeId, String documentId) {
+    public DeleteDocumentResponse deleteDocument(Long employeeId, String documentId) {
 
         EmployeeDocument doc = employeeDocumentRepository
                 .findByDocumentId(documentId)
@@ -656,20 +656,24 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                         new RuntimeException("Document not found: " + documentId)
                 );
 
-        // ✅ Ownership validation
+        // Ownership validation
         if (!doc.getEmployeeId().equals(employeeId)) {
             throw new RuntimeException("Unauthorized access");
         }
 
-        // ✅ Already deleted check
+        //  Already deleted check
         if (Boolean.TRUE.equals(doc.getIsDeleted())) {
             throw new RuntimeException("Document already deleted");
         }
 
-        // ✅ Soft delete
+        //  Soft delete
         doc.setIsDeleted(true);
+        doc.setDeletedAt(LocalDateTime.now());
+
+        //  set user (from security context or default)
+        doc.setDeletedBy("SYSTEM"); // or logged-in user
+
         doc.setUpdatedAt(LocalDateTime.now());
-        doc.setVersion(doc.getVersion() + 1);
 
         // Optional: if primary → remove primary flag
         if (Boolean.TRUE.equals(doc.getIsPrimary())) {
@@ -677,6 +681,13 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         }
 
         employeeDocumentRepository.save(doc);
+
+        return DeleteDocumentResponse.builder()
+                .documentId(doc.getDocumentId())
+                .deleted(true)
+                .deletedAt(doc.getDeletedAt())
+                .deletedBy(doc.getDeletedBy())
+                .build();
     }
 
     private Specification<EmployeeDocument> buildSpecification(

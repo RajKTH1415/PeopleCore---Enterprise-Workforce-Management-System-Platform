@@ -88,6 +88,12 @@ public class EmployeeDocument {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private String deletedBy;
+
 
     @Column(name = "status")
     private String status;

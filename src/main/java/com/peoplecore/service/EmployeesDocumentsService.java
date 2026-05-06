@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 import com.peoplecore.dto.request.UpdateDocumentRequest;
+import com.peoplecore.dto.response.DeleteDocumentResponse;
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -75,5 +76,5 @@ public interface EmployeesDocumentsService {
             UpdateDocumentRequest request
     );
 
-    void deleteDocument(Long employeeId, String documentId);
+    DeleteDocumentResponse deleteDocument(Long employeeId, String documentId);
 }

@@ -1,6 +1,7 @@
 package com.peoplecore.controller;
 
 import com.peoplecore.dto.request.UpdateDocumentRequest;
+import com.peoplecore.dto.response.DeleteDocumentResponse;
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -179,21 +180,14 @@ public class EmployeeDocumentManagementController {
     }
 
     @DeleteMapping("/{employeeId}/documents/{documentId}")
-    public ResponseEntity<ApiResponse<String>> softDeleteDocument(
+    public ResponseEntity<ApiResponse<DeleteDocumentResponse>> softDeleteDocument(
             @PathVariable Long employeeId,
             @PathVariable String documentId,
-            HttpServletRequest request
+            HttpServletRequest httpServletRequest
     ) {
 
-        employeesDocumentsService.deleteDocument(employeeId, documentId);
+     DeleteDocumentResponse deleteDocumentResponse =  employeesDocumentsService.deleteDocument(employeeId, documentId);
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        200,
-                        "Document deleted successfully",
-                        request.getRequestURI(),
-                        "Deleted"
-                )
-        );
+     return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document deleted successfully",httpServletRequest.getRequestURI(), deleteDocumentResponse));
     }
 }
