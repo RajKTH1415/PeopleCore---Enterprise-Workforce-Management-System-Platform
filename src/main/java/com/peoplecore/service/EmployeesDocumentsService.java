@@ -1,5 +1,6 @@
 package com.peoplecore.service;
 
+import com.peoplecore.dto.request.UpdateDocumentRequest;
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -67,4 +68,10 @@ public interface EmployeesDocumentsService {
     );
 
     DocumentResponse getDocumentById(String documentId);
+
+    DocumentResponse updateDocumentMetadata(
+            Long employeeId,
+            String documentId,
+            UpdateDocumentRequest request
+    );
 }

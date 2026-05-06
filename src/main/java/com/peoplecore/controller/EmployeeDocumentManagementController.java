@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 
+import com.peoplecore.dto.request.UpdateDocumentRequest;
 import com.peoplecore.dto.response.DocumentDetailsResponse;
 import com.peoplecore.dto.response.DocumentResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -165,6 +166,20 @@ public class EmployeeDocumentManagementController {
 
         DocumentResponse response = employeesDocumentsService.getDocumentById(documentId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+    @PutMapping("/{employeeId}/documents/{documentId}")
+    public ResponseEntity<ApiResponse<DocumentResponse>> updateDocumentMetadata(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            @RequestBody UpdateDocumentRequest request,
+            HttpServletRequest httpServletRequest) {
 
+        DocumentResponse response = employeesDocumentsService.updateDocumentMetadata(
+                employeeId,
+                documentId,
+                request
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document metadata updated successfully", httpServletRequest.getRequestURI(), response));
     }
 }

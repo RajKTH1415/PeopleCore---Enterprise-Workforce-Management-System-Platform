@@ -1,6 +1,7 @@
 package com.peoplecore.service.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.peoplecore.dto.request.UpdateDocumentRequest;
 import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.AuditAction;
 import com.peoplecore.module.*;
@@ -587,6 +588,62 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + documentId));
 
         return mapToResponse(document);
+    }
+
+    @Override
+    @Transactional
+    public DocumentResponse updateDocumentMetadata(
+            Long employeeId,
+            String documentId,
+            UpdateDocumentRequest request
+    ) {
+
+        EmployeeDocument doc = employeeDocumentRepository
+                .findByDocumentId(documentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Document not found: " + documentId)
+                );
+
+        // ✅ Security Check
+        if (!doc.getEmployeeId().equals(employeeId)) {
+            throw new RuntimeException("Unauthorized access to document");
+        }
+
+        // ✅ Soft delete check
+        if (Boolean.TRUE.equals(doc.getIsDeleted())) {
+            throw new RuntimeException("Cannot update deleted document");
+        }
+
+        // ✅ Update only non-null fields (PATCH-like behavior)
+        if (request.getTitle() != null)
+            doc.setTitle(request.getTitle());
+
+        if (request.getDescription() != null)
+            doc.setDescription(request.getDescription());
+
+        if (request.getDocumentNumber() != null)
+            doc.setDocumentNumber(request.getDocumentNumber());
+
+        if (request.getIssueDate() != null)
+            doc.setIssueDate(request.getIssueDate());
+
+        if (request.getExpiryDate() != null)
+            doc.setExpiryDate(request.getExpiryDate());
+
+        // ⭐ IMPORTANT BUSINESS LOGIC
+        if (Boolean.TRUE.equals(request.getIsPrimary())) {
+
+            // remove previous primary
+            employeeDocumentRepository.clearPrimaryForEmployee(employeeId);
+
+            doc.setIsPrimary(true);
+        }
+
+        doc.setUpdatedAt(LocalDateTime.now());
+
+        EmployeeDocument saved = employeeDocumentRepository.save(doc);
+
+        return mapToResponse(saved);
     }
 
     private Specification<EmployeeDocument> buildSpecification(
