@@ -1,0 +1,6 @@
+package com.peoplecore.enums;
+
+public enum ActionType {
+    UPLOAD, DOWNLOAD, VIEW, UPDATE_METADATA,
+    REPLACE_FILE, DELETE, PERMANENT_DELETE, VERIFY, REJECT,RESTORE
+}

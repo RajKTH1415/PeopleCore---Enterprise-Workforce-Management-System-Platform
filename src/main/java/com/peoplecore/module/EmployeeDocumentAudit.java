@@ -1,5 +1,7 @@
 package com.peoplecore.module;
 
+import com.peoplecore.enums.AccessType;
+import com.peoplecore.enums.ActionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,11 +43,11 @@ public class EmployeeDocumentAudit {
     @Column(name = "performed_at")
     private LocalDateTime performedAt;
 
-    @Column(name = "action_type")
-    private String actionType;
+    @Enumerated(EnumType.STRING)
+    private ActionType actionType;
 
-    @Column(name = "access_type")
-    private String accessType;
+    @Enumerated(EnumType.STRING)
+    private AccessType accessType;
 
     @Column(name = "ip_address", length = 50)
     private String ipAddress;

@@ -1,10 +1,7 @@
 package com.peoplecore.service;
 
 import com.peoplecore.dto.request.UpdateDocumentRequest;
-import com.peoplecore.dto.response.DeleteDocumentResponse;
-import com.peoplecore.dto.response.DocumentDetailsResponse;
-import com.peoplecore.dto.response.DocumentResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,5 +73,10 @@ public interface EmployeesDocumentsService {
             UpdateDocumentRequest request
     );
 
-    DeleteDocumentResponse deleteDocument(Long employeeId, String documentId);
+    DeleteDocumentResponse deleteDocument(Long employeeId, String documentId, HttpServletRequest request);
+
+    RestoreDocumentResponse restoreDocument(
+            Long employeeId,
+            String documentId,
+            HttpServletRequest request);
 }

@@ -1,8 +1,11 @@
 package com.peoplecore.service.Impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.peoplecore.dto.request.UpdateDocumentRequest;
 import com.peoplecore.dto.response.*;
+import com.peoplecore.enums.AccessType;
+import com.peoplecore.enums.ActionType;
 import com.peoplecore.enums.AuditAction;
 import com.peoplecore.module.*;
 import com.peoplecore.repository.*;
@@ -127,8 +130,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         List<DocumentAuditDto> auditDtos = audits.stream()
                 .map(a -> DocumentAuditDto.builder()
                         .action(a.getAction())
-                        .actionType(a.getActionType())
-                        .accessType(a.getAccessType())
+                        .actionType(a.getActionType().name())
+                        .accessType(a.getAccessType().name())
                         .remarks(a.getRemarks())
                         .performedBy(a.getPerformedBy())
                         .performedAt(a.getPerformedAt())
@@ -409,8 +412,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                     .fileName(doc.getFileName())
                     .fileUrl(doc.getFileUrl())
                     .remarks(existingDocOpt.isPresent() ? "Version updated" : "Initial upload")
-                    .actionType(actionTypeValue) //
-                    .accessType("WRITE")
+                    .actionType(ActionType.UPLOAD) //
+                    .accessType(AccessType.WRITE)
                     .performedBy("SYSTEM")
                     .status("SUCCESS")
                     .oldValue(oldDiffJson)
@@ -643,12 +646,14 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
         EmployeeDocument saved = employeeDocumentRepository.save(doc);
 
+
+
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional
-    public DeleteDocumentResponse deleteDocument(Long employeeId, String documentId) {
+    public DeleteDocumentResponse deleteDocument(Long employeeId, String documentId, HttpServletRequest request) {
 
         EmployeeDocument doc = employeeDocumentRepository
                 .findByDocumentId(documentId)
@@ -666,28 +671,135 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             throw new RuntimeException("Document already deleted");
         }
 
-        //  Soft delete
+
         doc.setIsDeleted(true);
         doc.setDeletedAt(LocalDateTime.now());
 
-        //  set user (from security context or default)
+
         doc.setDeletedBy("SYSTEM"); // or logged-in user
 
         doc.setUpdatedAt(LocalDateTime.now());
 
-        // Optional: if primary → remove primary flag
         if (Boolean.TRUE.equals(doc.getIsPrimary())) {
             doc.setIsPrimary(false);
         }
 
         employeeDocumentRepository.save(doc);
 
+
+        EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
+                .documentId(doc.getId())
+                .employeeId(doc.getEmployeeId())
+                .action(ActionType.DELETE.name()) // business action
+                .actionType(ActionType.UPDATE_METADATA) //  DB allowed
+                .accessType(AccessType.WRITE) //  DB allowed
+                .fileName(doc.getFileName())
+                .fileUrl(doc.getFileUrl())
+                .remarks("Document soft deleted")
+                .performedBy("SYSTEM")
+                .performedAt(LocalDateTime.now())
+                .ipAddress(request.getRemoteAddr())
+                .userAgent(request.getHeader("User-Agent"))
+                .status("SUCCESS")
+                .oldValue("oldDiffJson")
+                .newValue("newDiffJson")
+                .build();
+
+        documentAuditRepository.save(audit);
+
+        //  Response
         return DeleteDocumentResponse.builder()
                 .documentId(doc.getDocumentId())
                 .deleted(true)
                 .deletedAt(doc.getDeletedAt())
                 .deletedBy(doc.getDeletedBy())
                 .build();
+    }
+
+    private String toJson(EmployeeDocument doc) {
+        try {
+            return new ObjectMapper().writeValueAsString(doc);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    @Override
+    @Transactional
+    public RestoreDocumentResponse restoreDocument(
+            Long employeeId,
+            String documentId,
+            HttpServletRequest request) {
+
+        EmployeeDocument doc = employeeDocumentRepository
+                .findByDocumentId(documentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Document not found: " + documentId)
+                );
+
+        // ✅ Ownership validation
+        if (!doc.getEmployeeId().equals(employeeId)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        // ❌ If not deleted
+        if (!Boolean.TRUE.equals(doc.getIsDeleted())) {
+            throw new RuntimeException("Document is not deleted");
+        }
+
+        // 🔹 Take snapshot BEFORE restore
+        String oldValue = convertToJson(doc);
+
+        // ✅ Restore logic
+        doc.setIsDeleted(false);
+        doc.setDeletedAt(null);
+        doc.setDeletedBy(null);
+        doc.setUpdatedAt(LocalDateTime.now());
+
+        employeeDocumentRepository.save(doc);
+
+        // 🔹 Snapshot AFTER restore
+        String newValue = convertToJson(doc);
+        String oldJson  = toJson(doc);
+
+        String user = "SYSTEM"; // replace with logged-in user
+
+        // Save audit
+        EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
+                .documentId(doc.getId())
+                .employeeId(doc.getEmployeeId())
+                .action(ActionType.RESTORE.name())
+                .actionType(ActionType.UPDATE_METADATA)
+                .accessType(AccessType.WRITE)
+                .fileName(doc.getFileName())
+                .fileUrl(doc.getFileUrl())
+                .remarks("Document restored")
+                .performedBy(user)
+                .performedAt(LocalDateTime.now())
+                .ipAddress(request.getRemoteAddr())
+                .userAgent(request.getHeader("User-Agent"))
+                .status(doc.getStatus())
+                .oldValue(oldValue)
+                .newValue(newValue)
+                .build();
+
+        documentAuditRepository.save(audit);
+
+        // ✅ Response
+        return RestoreDocumentResponse.builder()
+                .documentId(doc.getDocumentId())
+                .restored(true)
+                .restoredAt(LocalDateTime.now())
+                .restoredBy(user)
+                .build();
+    }
+
+    private String convertToJson(EmployeeDocument doc) {
+        try {
+            return objectMapper.writeValueAsString(doc);
+        } catch (Exception e) {
+            throw new RuntimeException("JSON conversion error");
+        }
     }
 
     private Specification<EmployeeDocument> buildSpecification(

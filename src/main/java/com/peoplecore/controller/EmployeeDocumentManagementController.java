@@ -1,10 +1,7 @@
 package com.peoplecore.controller;
 
 import com.peoplecore.dto.request.UpdateDocumentRequest;
-import com.peoplecore.dto.response.DeleteDocumentResponse;
-import com.peoplecore.dto.response.DocumentDetailsResponse;
-import com.peoplecore.dto.response.DocumentResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -183,11 +180,29 @@ public class EmployeeDocumentManagementController {
     public ResponseEntity<ApiResponse<DeleteDocumentResponse>> softDeleteDocument(
             @PathVariable Long employeeId,
             @PathVariable String documentId,
-            HttpServletRequest httpServletRequest
-    ) {
+            HttpServletRequest httpServletRequest) {
 
-     DeleteDocumentResponse deleteDocumentResponse =  employeesDocumentsService.deleteDocument(employeeId, documentId);
+     DeleteDocumentResponse deleteDocumentResponse =  employeesDocumentsService.deleteDocument(employeeId, documentId, httpServletRequest);
 
      return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document deleted successfully",httpServletRequest.getRequestURI(), deleteDocumentResponse));
+    }
+
+    @PutMapping("/{employeeId}/documents/{documentId}/restore")
+    public ResponseEntity<ApiResponse<RestoreDocumentResponse>> restoreDocument(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            HttpServletRequest request) {
+
+        RestoreDocumentResponse response =
+                employeesDocumentsService.restoreDocument(employeeId, documentId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        200,
+                        "Document restored successfully",
+                        request.getRequestURI(),
+                        response
+                )
+        );
     }
 }
