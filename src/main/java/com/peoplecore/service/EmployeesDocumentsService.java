@@ -84,4 +84,10 @@ public interface EmployeesDocumentsService {
                                     String documentId,
                                     Integer version,
                                     HttpServletRequest request);
+
+
+    DocumentResponse replaceDocument(Long employeeId,
+                                     String documentId,
+                                     MultipartFile file,
+                                     HttpServletRequest request);
 }

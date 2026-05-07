@@ -76,7 +76,14 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
         try {
 
             String folder = "certificates/employee-" + employeeId;
-            String fileUrl = fileStorageService.uploadFile(file, folder);
+
+            String fileUrl;
+
+            try {
+                fileUrl = fileStorageService.uploadFile(file, folder);
+            } catch (Exception e) {
+                throw new RuntimeException("Certificate upload failed: " + e.getMessage(), e);
+            }
 
             certification.setFileUrl(fileUrl);
             certification.setFileName(file.getOriginalFilename());
@@ -291,13 +298,18 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
                 fileStorageService.deleteFile(oldFileUrl);
             }
 
-            // Upload new file
             String folder = "certificates/employee-" + employeeId;
-            String newFileUrl =
-                    fileStorageService.uploadFile(file, folder);
+
+            String fileUrl;
+
+            try {
+                fileUrl = fileStorageService.uploadFile(file, folder);
+            } catch (Exception e) {
+                throw new RuntimeException("Certificate upload failed: " + e.getMessage(), e);
+            }
 
             // Update certification
-            certification.setFileUrl(newFileUrl);
+            certification.setFileUrl(fileUrl);
             certification.setFileName(file.getOriginalFilename());
             certification.setFileType(file.getContentType());
             certification.setFileSize(file.getSize());
@@ -314,7 +326,7 @@ public class EmployeeCertificationFileServiceImpl implements EmployeeCertificati
                             .action(CertificationAuditActions.FILE_REPLACED)
                             .fileName(file.getOriginalFilename())
                             .fileType(file.getContentType())
-                            .fileUrl(newFileUrl)
+                            .fileUrl(fileUrl)
                             .performedBy("SYSTEM")
                             .performedAt(LocalDateTime.now())
                             .remarks(

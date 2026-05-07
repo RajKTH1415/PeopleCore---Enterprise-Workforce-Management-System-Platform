@@ -7,6 +7,7 @@ import com.peoplecore.enums.ActionType;
 import com.peoplecore.module.*;
 import com.peoplecore.repository.*;
 import com.peoplecore.service.EmployeesDocumentsService;
+import com.peoplecore.service.FileStorageService;
 import com.peoplecore.service.OcrService;
 import com.peoplecore.service.SkillParserService;
 import jakarta.persistence.criteria.Predicate;
@@ -35,6 +36,7 @@ import java.util.*;
 public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService {
 
 
+    private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
     private final OcrService ocrService;
     private final SkillParserService skillParserService;
@@ -51,7 +53,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
     private String uploadDir;
 
 
-    public EmployeesDocumentsServiceImpl(ObjectMapper objectMapper, OcrService ocrService, SkillParserService skillParserService, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationsRepository employeeCertificationsRepository, EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository documentAuditRepository, EmployeeDocumentSkillMappingRepository employeeDocumentSkillMappingRepository, EmployeeDocumentCertificationMappingRepository employeeDocumentCertificationMappingRepository) {
+    public EmployeesDocumentsServiceImpl(FileStorageService fileStorageService, ObjectMapper objectMapper, OcrService ocrService, SkillParserService skillParserService, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationsRepository employeeCertificationsRepository, EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository documentAuditRepository, EmployeeDocumentSkillMappingRepository employeeDocumentSkillMappingRepository, EmployeeDocumentCertificationMappingRepository employeeDocumentCertificationMappingRepository) {
+        this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
         this.ocrService = ocrService;
         this.skillParserService = skillParserService;
@@ -836,6 +839,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         String newValueJson = convertToJson(document);
 
         Map<String, String> diffMap = generateOldNewDiff(oldValueJson, newValueJson);
+        String oldDiffJson = diffMap.get("old");
+        String newDiffJson = diffMap.get("new");
 
         EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
                 .documentId(document.getId())
@@ -851,12 +856,98 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .ipAddress(request.getRemoteAddr())
                 .userAgent(request.getHeader("User-Agent"))
                 .status("SUCCESS")
-                .oldValue(oldValueJson)
-                .newValue(newValueJson)
+                .oldValue(oldDiffJson)
+                .newValue(newDiffJson)
                 .build();
 
         documentAuditRepository.save(audit);
 
+        return DocumentResponse.builder()
+                .documentId(document.getDocumentId())
+                .employeeId(document.getEmployeeId())
+                .fileName(document.getFileName())
+                .fileUrl(document.getFileUrl())
+                .fileSize(document.getFileSize())
+                .version(document.getVersion())
+                .updatedAt(document.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public DocumentResponse replaceDocument(Long employeeId, String documentId, MultipartFile file, HttpServletRequest request) {
+
+        EmployeeDocument document = employeeDocumentRepository.findByDocumentId(documentId)
+                .orElseThrow(()-> new RuntimeException("Document not found"));
+
+        if (!document.getEmployeeId().equals(employeeId)){
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        String oldValueJson = convertToJson(document);
+        DocumentVersionHistory versionHistory = DocumentVersionHistory.builder()
+                .documentRefId(document.getId()) // FK
+                .documentId(document.getDocumentId()) // business ID
+                .version(document.getVersion()) // current version
+                .fileName(document.getFileName())
+                .fileSize(document.getFileSize())
+                .storageKey(document.getFileUrl()) // IMPORTANT
+                .versionComment("File replaced")
+                .uploadedBy("SYSTEM")
+                .uploadedAt(LocalDateTime.now())
+                .build();
+
+        documentVersionRepository.save(versionHistory);
+
+        // 6. Upload NEW file
+        String folder = employeeId + "/" + documentId;
+
+        String newPath;
+
+        try {
+            newPath = fileStorageService.uploadFile(file, folder);
+        } catch (Exception e) {
+            throw new RuntimeException("File upload failed: " + e.getMessage());
+        }
+
+        // 6. Update document
+        document.setFileName(file.getOriginalFilename());
+        document.setFileUrl(newPath);
+        document.setFileSize(file.getSize());
+        document.setVersion(document.getVersion() + 1);
+        document.setUpdatedAt(LocalDateTime.now());
+
+        employeeDocumentRepository.save(document);
+
+        // 7. Capture NEW state
+        String newValueJson = convertToJson(document);
+
+        // 8. Diff
+        Map<String, String> diffMap = generateOldNewDiff(oldValueJson, newValueJson);
+        String oldDiffJson = diffMap.get("old");
+        String newDiffJson = diffMap.get("new");
+        // 9. Audit log
+        EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
+                .documentId(document.getId())
+                .employeeId(employeeId)
+                .action(ActionType.REPLACE_FILE.name())
+                .actionType(ActionType.REPLACE_FILE) //  matches constraint
+                .accessType(AccessType.WRITE) //  matches constraint
+                .fileName(document.getFileName())
+                .fileUrl(document.getFileUrl())
+                .remarks("File replaced with new version")
+                .performedBy("SYSTEM")
+                .performedAt(LocalDateTime.now())
+                .ipAddress(getClientIp(request))
+                .userAgent(getUserAgent(request))
+                .status("SUCCESS")
+                .oldValue(oldDiffJson)
+                .newValue(newDiffJson)
+                .build();
+
+        documentAuditRepository.save(audit);
+
+        // 10. Response
         return DocumentResponse.builder()
                 .documentId(document.getDocumentId())
                 .employeeId(document.getEmployeeId())
@@ -1086,5 +1177,41 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         } catch (Exception e) {
             throw new RuntimeException("Diff generation failed", e);
         }
+    }
+    private String getClientIp(HttpServletRequest request) {
+
+        String xfHeader = request.getHeader("X-Forwarded-For");
+
+        if (xfHeader != null && !xfHeader.isEmpty()
+                && !"unknown".equalsIgnoreCase(xfHeader)) {
+
+            return xfHeader.split(",")[0];
+        }
+
+        String ip = request.getRemoteAddr();
+
+        // Convert localhost IPv6 to IPv4
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+
+            try {
+                ip = java.net.InetAddress
+                        .getLocalHost()
+                        .getHostAddress();
+            } catch (Exception e) {
+                ip = "127.0.0.1";
+            }
+        }
+
+        return ip;
+    }
+    private String getUserAgent(HttpServletRequest request) {
+
+        String userAgent = request.getHeader("User-Agent");
+
+        if (userAgent == null || userAgent.isBlank()) {
+            return "UNKNOWN";
+        }
+
+        return userAgent;
     }
 }

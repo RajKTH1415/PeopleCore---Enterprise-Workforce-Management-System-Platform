@@ -207,9 +207,21 @@ public class EmployeeDocumentManagementController {
 
         DocumentResponse response = employeesDocumentsService
                 .restoreVersion(employeeId, documentId, version, request);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Version restored successfully", request.getRequestURI(), response));
+    }
+
+    @PutMapping("/{employeeId}/documents/{documentId}/replace")
+    public ResponseEntity<ApiResponse<DocumentResponse>> replaceDocument(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
+
+        DocumentResponse response = employeesDocumentsService
+                .replaceDocument(employeeId, documentId, file, request);
 
         return ResponseEntity.ok(
-                ApiResponse.success(200, "Version restored successfully",
+                ApiResponse.success(200, "Document replaced successfully",
                         request.getRequestURI(), response)
         );
     }
