@@ -196,13 +196,21 @@ public class EmployeeDocumentManagementController {
         RestoreDocumentResponse response =
                 employeesDocumentsService.restoreDocument(employeeId, documentId, request);
 
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document restored successfully", request.getRequestURI(), response));
+    }
+    @PutMapping("/{employeeId}/documents/{documentId}/versions/{version}/restore")
+    public ResponseEntity<ApiResponse<DocumentResponse>> restoreVersion(
+            @PathVariable Long employeeId,
+            @PathVariable String documentId,
+            @PathVariable Integer version,
+            HttpServletRequest request) {
+
+        DocumentResponse response = employeesDocumentsService
+                .restoreVersion(employeeId, documentId, version, request);
+
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        200,
-                        "Document restored successfully",
-                        request.getRequestURI(),
-                        response
-                )
+                ApiResponse.success(200, "Version restored successfully",
+                        request.getRequestURI(), response)
         );
     }
 }

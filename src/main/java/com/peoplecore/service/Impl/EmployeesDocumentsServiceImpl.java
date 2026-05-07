@@ -1,18 +1,14 @@
 package com.peoplecore.service.Impl;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.peoplecore.dto.request.UpdateDocumentRequest;
 import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.AccessType;
 import com.peoplecore.enums.ActionType;
-import com.peoplecore.enums.AuditAction;
 import com.peoplecore.module.*;
 import com.peoplecore.repository.*;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.service.OcrService;
 import com.peoplecore.service.SkillParserService;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -531,7 +527,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             String sortDir
     ) {
 
-        // ✅ SAFE SORT
+        // SAFE SORT
         Set<String> allowedSortFields = Set.of(
                 "uploadedAt", "updatedAt", "fileName", "documentType"
         );
@@ -607,17 +603,17 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                         new RuntimeException("Document not found: " + documentId)
                 );
 
-        // ✅ Security Check
+        // Security Check
         if (!doc.getEmployeeId().equals(employeeId)) {
             throw new RuntimeException("Unauthorized access to document");
         }
 
-        // ✅ Soft delete check
+        //  Soft delete check
         if (Boolean.TRUE.equals(doc.getIsDeleted())) {
             throw new RuntimeException("Cannot update deleted document");
         }
 
-        // ✅ Update only non-null fields (PATCH-like behavior)
+        //  Update only non-null fields (PATCH-like behavior)
         if (request.getTitle() != null)
             doc.setTitle(request.getTitle());
 
@@ -633,7 +629,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         if (request.getExpiryDate() != null)
             doc.setExpiryDate(request.getExpiryDate());
 
-        // ⭐ IMPORTANT BUSINESS LOGIC
+        //  IMPORTANT BUSINESS LOGIC
         if (Boolean.TRUE.equals(request.getIsPrimary())) {
 
             // remove previous primary
@@ -671,6 +667,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
             throw new RuntimeException("Document already deleted");
         }
 
+        String oldValue = convertToJson(doc);
 
         doc.setIsDeleted(true);
         doc.setDeletedAt(LocalDateTime.now());
@@ -685,6 +682,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         }
 
         employeeDocumentRepository.save(doc);
+
+        String newValue = convertToJson(doc);
 
 
         EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
@@ -701,8 +700,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .ipAddress(request.getRemoteAddr())
                 .userAgent(request.getHeader("User-Agent"))
                 .status("SUCCESS")
-                .oldValue("oldDiffJson")
-                .newValue("newDiffJson")
+                .oldValue(oldValue)
+                .newValue(newValue)
                 .build();
 
         documentAuditRepository.save(audit);
@@ -737,12 +736,12 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                         new RuntimeException("Document not found: " + documentId)
                 );
 
-        // ✅ Ownership validation
+        // Ownership validation
         if (!doc.getEmployeeId().equals(employeeId)) {
             throw new RuntimeException("Unauthorized access");
         }
 
-        // ❌ If not deleted
+        //  If not deleted
         if (!Boolean.TRUE.equals(doc.getIsDeleted())) {
             throw new RuntimeException("Document is not deleted");
         }
@@ -750,7 +749,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         // 🔹 Take snapshot BEFORE restore
         String oldValue = convertToJson(doc);
 
-        // ✅ Restore logic
+        //  Restore logic
         doc.setIsDeleted(false);
         doc.setDeletedAt(null);
         doc.setDeletedBy(null);
@@ -758,9 +757,9 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
         employeeDocumentRepository.save(doc);
 
-        // 🔹 Snapshot AFTER restore
+        //  AFTER restore
         String newValue = convertToJson(doc);
-        String oldJson  = toJson(doc);
+
 
         String user = "SYSTEM"; // replace with logged-in user
 
@@ -780,17 +779,92 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .userAgent(request.getHeader("User-Agent"))
                 .status(doc.getStatus())
                 .oldValue(oldValue)
+                .status("SUCCESS")
                 .newValue(newValue)
                 .build();
 
         documentAuditRepository.save(audit);
 
-        // ✅ Response
+        //  Response
         return RestoreDocumentResponse.builder()
                 .documentId(doc.getDocumentId())
                 .restored(true)
                 .restoredAt(LocalDateTime.now())
                 .restoredBy(user)
+                .build();
+    }
+
+    @Override
+    public DocumentResponse restoreVersion(Long employeeId, String documentId, Integer version, HttpServletRequest request) {
+
+        // 1. Fetch document
+       EmployeeDocument document = employeeDocumentRepository.findByDocumentId(documentId).orElseThrow(() -> new RuntimeException("Document not found"));
+        // 2. Ownership check
+        if (!document.getEmployeeId().equals(employeeId)){
+            throw new RuntimeException("Unauthorized access");
+        }
+        //fetch requested version
+        DocumentVersionHistory oldVersion = documentVersionRepository.findByDocumentIdAndVersion(documentId, version)
+                .orElseThrow(()-> new RuntimeException("Version not found"));
+
+        String oldValueJson = toJson(document);
+
+        // 5. Backup CURRENT version into history (VERY IMPORTANT)
+        DocumentVersionHistory backup = DocumentVersionHistory.builder()
+                .documentRefId(document.getId())
+                .documentId(document.getDocumentId())
+                .version(document.getVersion())
+                .fileName(document.getFileName())
+                .fileSize(document.getFileSize())
+                .storageKey(document.getFileUrl())
+                .versionComment("Backup before restore")
+                .uploadedBy("SYSTEM")
+                .uploadedAt(LocalDateTime.now())
+                .build();
+
+        documentVersionRepository.save(backup);
+
+        //restore old version
+        document.setFileName(oldVersion.getFileName());
+        document.setFileUrl(oldVersion.getStorageKey());
+        document.setFileSize(oldVersion.getFileSize());
+        document.setVersion(document.getVersion() + 1); // increment version//do not use old version
+        document.setUpdatedAt(LocalDateTime.now());
+
+        employeeDocumentRepository.save(document);
+
+        String newValueJson = convertToJson(document);
+
+        Map<String, String> diffMap = generateOldNewDiff(oldValueJson, newValueJson);
+
+        EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
+                .documentId(document.getId())
+                .employeeId(employeeId)
+                .action(ActionType.RESTORE.name())
+                .actionType(ActionType.REPLACE_FILE)
+                .accessType(AccessType.WRITE)
+                .fileName(document.getFileName())
+                .fileUrl(document.getFileUrl())
+                .remarks("Restored version: " + version)
+                .performedBy("SYSTEM")
+                .performedAt(LocalDateTime.now())
+                .ipAddress(request.getRemoteAddr())
+                .userAgent(request.getHeader("User-Agent"))
+                .status("SUCCESS")
+                .oldValue(oldValueJson)
+                .newValue(newValueJson)
+                .build();
+
+        documentAuditRepository.save(audit);
+
+        return DocumentResponse.builder()
+                .documentId(document.getDocumentId())
+                .employeeId(document.getEmployeeId())
+                .fileName(document.getFileName())
+                .fileUrl(document.getFileUrl())
+                .fileSize(document.getFileSize())
+                .version(document.getVersion())
+                .updatedAt(document.getUpdatedAt())
                 .build();
     }
 
@@ -901,7 +975,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
 
             List<Predicate> predicates = new ArrayList<>();
 
-            // ✅ FIXED: correct field usage
+
             predicates.add(cb.equal(root.get("employeeId"), employeeId));
 
             predicates.add(cb.or(

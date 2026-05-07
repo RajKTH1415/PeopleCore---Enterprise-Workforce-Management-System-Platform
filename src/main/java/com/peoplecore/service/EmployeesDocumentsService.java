@@ -79,4 +79,9 @@ public interface EmployeesDocumentsService {
             Long employeeId,
             String documentId,
             HttpServletRequest request);
+
+    DocumentResponse restoreVersion(Long employeeId,
+                                    String documentId,
+                                    Integer version,
+                                    HttpServletRequest request);
 }

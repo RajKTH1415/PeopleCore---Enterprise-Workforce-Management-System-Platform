@@ -94,7 +94,6 @@ public class EmployeeDocument {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-
     @Column(name = "status")
     private String status;
 }
