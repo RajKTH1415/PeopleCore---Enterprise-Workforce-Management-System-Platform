@@ -35,7 +35,6 @@ public class DocumentDetailsResponse {
     private LocalDateTime uploadedAt;
     private LocalDateTime updatedAt;
 
-    // 🔥 Important additions
     private List<DocumentVersionDto> versions;
     private List<DocumentAuditDto> audits;
 }

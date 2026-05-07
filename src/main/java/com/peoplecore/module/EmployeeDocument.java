@@ -58,6 +58,9 @@ public class EmployeeDocument {
     @Column(name = "is_primary")
     private Boolean isPrimary;
 
+    @Column(name = "access_level")
+    private String accessLevel;
+
     @Column(name = "tags")
     @JdbcTypeCode(SqlTypes.ARRAY)
     private String[] tags;
@@ -96,4 +99,7 @@ public class EmployeeDocument {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "download_count")
+    private Integer downloadCount;
 }

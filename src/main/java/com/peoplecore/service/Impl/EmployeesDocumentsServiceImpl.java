@@ -13,6 +13,8 @@ import com.peoplecore.service.SkillParserService;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +39,7 @@ import java.util.*;
 public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService {
 
 
+    private final DocumentAccessLogRepository  documentAccessLogRepository;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
     private final OcrService ocrService;
@@ -53,7 +57,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
     private String uploadDir;
 
 
-    public EmployeesDocumentsServiceImpl(FileStorageService fileStorageService, ObjectMapper objectMapper, OcrService ocrService, SkillParserService skillParserService, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationsRepository employeeCertificationsRepository, EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository documentAuditRepository, EmployeeDocumentSkillMappingRepository employeeDocumentSkillMappingRepository, EmployeeDocumentCertificationMappingRepository employeeDocumentCertificationMappingRepository) {
+    public EmployeesDocumentsServiceImpl(DocumentAccessLogRepository documentAccessLogRepository, FileStorageService fileStorageService, ObjectMapper objectMapper, OcrService ocrService, SkillParserService skillParserService, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationsRepository employeeCertificationsRepository, EmployeeDocumentRepository employeeDocumentRepository, DocumentVersionRepository documentVersionRepository, DocumentAuditRepository documentAuditRepository, EmployeeDocumentSkillMappingRepository employeeDocumentSkillMappingRepository, EmployeeDocumentCertificationMappingRepository employeeDocumentCertificationMappingRepository) {
+        this.documentAccessLogRepository = documentAccessLogRepository;
         this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
         this.ocrService = ocrService;
@@ -597,8 +602,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
     public DocumentResponse updateDocumentMetadata(
             Long employeeId,
             String documentId,
-            UpdateDocumentRequest request
-    ) {
+            UpdateDocumentRequest request) {
 
         EmployeeDocument doc = employeeDocumentRepository
                 .findByDocumentId(documentId)
@@ -657,8 +661,7 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         EmployeeDocument doc = employeeDocumentRepository
                 .findByDocumentId(documentId)
                 .orElseThrow(() ->
-                        new RuntimeException("Document not found: " + documentId)
-                );
+                        new RuntimeException("Document not found: " + documentId));
 
         // Ownership validation
         if (!doc.getEmployeeId().equals(employeeId)) {
@@ -831,7 +834,10 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         document.setFileName(oldVersion.getFileName());
         document.setFileUrl(oldVersion.getStorageKey());
         document.setFileSize(oldVersion.getFileSize());
-        document.setVersion(document.getVersion() + 1); // increment version//do not use old version
+
+       /* // increment version//do not use old version*/
+        document.setVersion(document.getVersion() + 1);
+
         document.setUpdatedAt(LocalDateTime.now());
 
         employeeDocumentRepository.save(document);
@@ -957,6 +963,105 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .version(document.getVersion())
                 .updatedAt(document.getUpdatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public DownloadDocumentResponse downloadDocument(String documentId,
+                                                     HttpServletRequest request) {
+
+        // 1. Fetch document
+        EmployeeDocument doc = employeeDocumentRepository
+                .findByDocumentId(documentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Document not found"));
+
+        // 2. Deleted check
+        if (Boolean.TRUE.equals(doc.getIsDeleted())) {
+            throw new RuntimeException("Document has been deleted");
+        }
+
+        // 3. Access validation (optional future RBAC)
+        validateDocumentAccess(doc);
+
+        // 4. File path
+        Path filePath = Paths.get(doc.getFileUrl());
+
+        Resource resource;
+
+        try {
+            resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
+            }
+
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Invalid file path");
+        }
+
+        // 5. Increase download count
+        doc.setDownloadCount(
+                doc.getDownloadCount() == null
+                        ? 1
+                        : doc.getDownloadCount() + 1
+        );
+
+        employeeDocumentRepository.save(doc);
+
+        // 6. Insert access log
+        DocumentAccessLog log = DocumentAccessLog.builder()
+                .documentId(doc.getDocumentId())
+                .documentRefId(doc.getId())
+               // .emp(doc.getEmployeeId())
+                .accessType("DOWNLOAD")
+                .accessedBy("SYSTEM")
+                .accessedAt(LocalDateTime.now())
+                .ipAddress(request.getRemoteAddr())
+                .userAgent(request.getHeader("User-Agent"))
+               // .status("SUCCESS")
+                .build();
+
+        documentAccessLogRepository.save(log);
+
+        // 7. Audit log
+        EmployeeDocumentAudit audit = EmployeeDocumentAudit.builder()
+                .documentId(doc.getId())
+                .employeeId(doc.getEmployeeId())
+                .action(ActionType.DOWNLOAD.name())
+                .actionType(ActionType.DOWNLOAD)
+                .accessType(AccessType.READ)
+                .fileName(doc.getFileName())
+                .fileUrl(doc.getFileUrl())
+                .remarks("Document downloaded")
+                .performedBy("SYSTEM")
+                .performedAt(LocalDateTime.now())
+                .ipAddress(request.getRemoteAddr())
+                .userAgent(request.getHeader("User-Agent"))
+                .status("SUCCESS")
+                .build();
+
+        documentAuditRepository.save(audit);
+
+        // 8. Response
+        return DownloadDocumentResponse.builder()
+                .resource(resource)
+                .fileName(doc.getFileName())
+                .contentType(doc.getFileType())
+                .build();
+    }
+
+    private void validateDocumentAccess(EmployeeDocument doc) {
+
+        // Example future RBAC
+
+        if ("PRIVATE".equalsIgnoreCase(doc.getAccessLevel())) {
+
+            // current user validation
+            // manager validation
+            // HR validation
+
+        }
     }
 
     private String convertToJson(EmployeeDocument doc) {

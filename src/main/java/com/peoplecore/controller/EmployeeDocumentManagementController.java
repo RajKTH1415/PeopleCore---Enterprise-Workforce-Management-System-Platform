@@ -5,7 +5,9 @@ import com.peoplecore.dto.response.*;
 import com.peoplecore.service.EmployeesDocumentsService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ public class EmployeeDocumentManagementController {
     }
 
 
-    @PostMapping(value = "/{employeeId}/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{employeeId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<DocumentResponse>> uploadDocument(
             @PathVariable Long employeeId,
             @RequestParam("file") MultipartFile file,
@@ -61,6 +63,7 @@ public class EmployeeDocumentManagementController {
                 ApiResponse.success(200, "All documents deleted successfully",
                         request.getRequestURI(), null));
     }
+
     @GetMapping("/{employeeId}/documents/{documentId}")
     public ResponseEntity<ApiResponse<DocumentDetailsResponse>> getDocumentById(
             @PathVariable Long employeeId,
@@ -70,8 +73,9 @@ public class EmployeeDocumentManagementController {
         DocumentDetailsResponse response =
                 employeesDocumentsService.getDocumentById(employeeId, documentId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully",httpServletRequest.getRequestURI(), response));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+
     @GetMapping("/{employeeId}/documents")
     public ResponseEntity<ApiResponse<PageResponse<DocumentResponse>>> getAllDocuments(
             @PathVariable Long employeeId,
@@ -112,7 +116,7 @@ public class EmployeeDocumentManagementController {
                         size,
                         sortBy,
                         sortDir);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully", httpServletRequest.getRequestURI(), response));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Documents fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @GetMapping
@@ -150,7 +154,7 @@ public class EmployeeDocumentManagementController {
                         sortBy,
                         sortDir);
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Documents fetched successfully",httpServletRequest.getRequestURI(), response));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Documents fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @GetMapping("/{documentId}")
@@ -161,6 +165,7 @@ public class EmployeeDocumentManagementController {
         DocumentResponse response = employeesDocumentsService.getDocumentById(documentId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+
     @PutMapping("/{employeeId}/documents/{documentId}")
     public ResponseEntity<ApiResponse<DocumentResponse>> updateDocumentMetadata(
             @PathVariable Long employeeId,
@@ -182,9 +187,9 @@ public class EmployeeDocumentManagementController {
             @PathVariable String documentId,
             HttpServletRequest httpServletRequest) {
 
-     DeleteDocumentResponse deleteDocumentResponse =  employeesDocumentsService.deleteDocument(employeeId, documentId, httpServletRequest);
+        DeleteDocumentResponse deleteDocumentResponse = employeesDocumentsService.deleteDocument(employeeId, documentId, httpServletRequest);
 
-     return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document deleted successfully",httpServletRequest.getRequestURI(), deleteDocumentResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document deleted successfully", httpServletRequest.getRequestURI(), deleteDocumentResponse));
     }
 
     @PutMapping("/{employeeId}/documents/{documentId}/restore")
@@ -198,6 +203,7 @@ public class EmployeeDocumentManagementController {
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document restored successfully", request.getRequestURI(), response));
     }
+
     @PutMapping("/{employeeId}/documents/{documentId}/versions/{version}/restore")
     public ResponseEntity<ApiResponse<DocumentResponse>> restoreVersion(
             @PathVariable Long employeeId,
@@ -224,5 +230,20 @@ public class EmployeeDocumentManagementController {
                 ApiResponse.success(200, "Document replaced successfully",
                         request.getRequestURI(), response)
         );
+    }
+
+    @GetMapping("/{documentId}/download")
+    public ResponseEntity<Resource> downloadDocument(
+            @PathVariable String documentId,
+            HttpServletRequest request) {
+
+        DownloadDocumentResponse response =
+                employeesDocumentsService.downloadDocument(documentId, request);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(response.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + response.getFileName() + "\"")
+                .body(response.getResource());
     }
 }

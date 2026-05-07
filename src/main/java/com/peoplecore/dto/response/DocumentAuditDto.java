@@ -15,9 +15,6 @@ public class DocumentAuditDto {
     private String performedBy;
     private LocalDateTime performedAt;
 
-//    private String oldValue;
-//    private String newValue;
-
     private Object oldValue;
     private Object newValue;
 }

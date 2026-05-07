@@ -90,4 +90,7 @@ public interface EmployeesDocumentsService {
                                      String documentId,
                                      MultipartFile file,
                                      HttpServletRequest request);
+
+    DownloadDocumentResponse downloadDocument(String documentId,
+                                              HttpServletRequest request);
 }
