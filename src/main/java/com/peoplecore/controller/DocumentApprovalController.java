@@ -18,70 +18,54 @@ public class DocumentApprovalController {
     @PostMapping("/{documentId}/request-approval")
     public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
     requestApproval(@PathVariable String documentId,
-            HttpServletRequest request) {
+            HttpServletRequest httpServletRequest) {
 
         DocumentApprovalResponse response =
                 documentApprovalService.requestApproval(
                         documentId,
-                        request
-                );
+                        httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(
-                        HttpStatus.CREATED.value(),
+                .body(ApiResponse.success(HttpStatus.CREATED.value(),
                         "Approval request created successfully",
-                        request.getRequestURI(),
-                        response
-                ));
+                        httpServletRequest.getRequestURI(),
+                        response));
     }
 
     @PostMapping("/approval/{approvalId}/approve")
     public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
-    approveDocument(
-
-            @PathVariable Long approvalId,
-            HttpServletRequest request
-    ) {
+    approveDocument(@PathVariable Long approvalId,
+            HttpServletRequest httpServletRequest) {
 
         DocumentApprovalResponse response =
                 documentApprovalService.approveDocument(
                         approvalId,
-                        request
-                );
+                        httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Document approved successfully",
-                        request.getRequestURI(),
+                        httpServletRequest.getRequestURI(),
                         response
                 ));
     }
 
     @PostMapping("/approval/{approvalId}/reject")
     public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
-    rejectApproval(
-
-            @PathVariable Long approvalId,
-
-            @RequestParam String reason,
-
-            HttpServletRequest request
-    ) {
+    rejectApproval(@PathVariable Long approvalId, @RequestParam String reason, HttpServletRequest httpServletRequest) {
 
         DocumentApprovalResponse response =
                 documentApprovalService.rejectApproval(
                         approvalId,
                         reason,
-                        request
-                );
+                        httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Approval rejected successfully",
-                        request.getRequestURI(),
-                        response
-                ));
+                        httpServletRequest.getRequestURI(),
+                        response));
     }
 }
