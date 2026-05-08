@@ -102,4 +102,10 @@ public class EmployeeDocument {
 
     @Column(name = "download_count")
     private Integer downloadCount;
+
+    @Column(name = "verified_by")
+    private Long verifiedBy;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }
