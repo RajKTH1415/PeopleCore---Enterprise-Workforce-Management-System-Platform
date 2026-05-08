@@ -19,44 +19,38 @@ public class DocumentVerificationController {
     @PutMapping("/{documentId}/verify")
     public ResponseEntity<ApiResponse<DocumentResponse>> verifyDocument(
             @PathVariable String documentId,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         DocumentResponse response =
                 documentVerificationService.verifyDocument(
                         documentId,
-                        request
-                );
+                        httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Document verified successfully",
-                        request.getRequestURI(),
-                        response
-                ));
+                        httpServletRequest.getRequestURI(),
+                        response));
     }
 
     @PutMapping("/{documentId}/reject")
     public ResponseEntity<ApiResponse<DocumentResponse>> rejectDocument(
             @PathVariable String documentId,
             @RequestParam String reason,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         DocumentResponse response =
                 documentVerificationService.rejectDocument(
                         documentId,
                         reason,
-                        request
-                );
+                        httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Document rejected successfully",
-                        request.getRequestURI(),
-                        response
-                ));
+                        httpServletRequest.getRequestURI(),
+                        response));
     }
 }
