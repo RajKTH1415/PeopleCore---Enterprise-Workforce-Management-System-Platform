@@ -56,6 +56,7 @@ public class EmployeeDocumentAudit {
     @Column(name = "user_agent")
     private String userAgent;
 
+    @Column(name = "status")
     private String status;
 
     @Column(name = "old_value", columnDefinition = "jsonb")

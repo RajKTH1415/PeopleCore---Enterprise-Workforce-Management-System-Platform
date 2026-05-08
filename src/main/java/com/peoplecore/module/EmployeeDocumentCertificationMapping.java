@@ -24,6 +24,7 @@ public class EmployeeDocumentCertificationMapping {
     @Column(name = "employee_certification_id", nullable = false)
     private Long employeeCertificationId;
 
+    @Column(name = "status")
     private String status;
 
     @Column(name = "created_by")

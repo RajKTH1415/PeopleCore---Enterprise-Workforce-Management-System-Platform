@@ -1013,13 +1013,11 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
         DocumentAccessLog log = DocumentAccessLog.builder()
                 .documentId(doc.getDocumentId())
                 .documentRefId(doc.getId())
-               // .emp(doc.getEmployeeId())
                 .accessType("DOWNLOAD")
                 .accessedBy("SYSTEM")
                 .accessedAt(LocalDateTime.now())
-                .ipAddress(request.getRemoteAddr())
-                .userAgent(request.getHeader("User-Agent"))
-               // .status("SUCCESS")
+                .ipAddress(getClientIp(request))
+                .userAgent(getUserAgent(request))
                 .build();
 
         documentAccessLogRepository.save(log);
@@ -1036,8 +1034,8 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .remarks("Document downloaded")
                 .performedBy("SYSTEM")
                 .performedAt(LocalDateTime.now())
-                .ipAddress(request.getRemoteAddr())
-                .userAgent(request.getHeader("User-Agent"))
+                .ipAddress(getClientIp(request))
+                .userAgent(getUserAgent(request))
                 .status("SUCCESS")
                 .build();
 

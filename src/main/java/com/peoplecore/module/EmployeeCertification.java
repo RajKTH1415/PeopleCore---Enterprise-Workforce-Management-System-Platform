@@ -39,6 +39,7 @@ public class EmployeeCertification extends Auditable implements Serializable {
     @Column(name = "expiry_date")
     private LocalDate expiryDate;
 
+    @Column(name = "status")
     private String status;
 
     @Column(name = "proof_url")
