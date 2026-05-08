@@ -17,40 +17,14 @@ public class DocumentVerificationController {
     private final DocumentVerificationService documentVerificationService;
 
     @PutMapping("/{documentId}/verify")
-    public ResponseEntity<ApiResponse<DocumentResponse>> verifyDocument(
-            @PathVariable String documentId,
-            HttpServletRequest httpServletRequest) {
-
-        DocumentResponse response =
-                documentVerificationService.verifyDocument(
-                        documentId,
-                        httpServletRequest);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Document verified successfully",
-                        httpServletRequest.getRequestURI(),
-                        response));
+    public ResponseEntity<ApiResponse<DocumentResponse>> verifyDocument(@PathVariable String documentId, HttpServletRequest httpServletRequest) {
+        DocumentResponse response = documentVerificationService.verifyDocument(documentId, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document verified successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @PutMapping("/{documentId}/reject")
-    public ResponseEntity<ApiResponse<DocumentResponse>> rejectDocument(
-            @PathVariable String documentId,
-            @RequestParam String reason,
-            HttpServletRequest httpServletRequest) {
-
-        DocumentResponse response =
-                documentVerificationService.rejectDocument(
-                        documentId,
-                        reason,
-                        httpServletRequest);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Document rejected successfully",
-                        httpServletRequest.getRequestURI(),
-                        response));
+    public ResponseEntity<ApiResponse<DocumentResponse>> rejectDocument(@PathVariable String documentId, @RequestParam String reason, HttpServletRequest httpServletRequest) {
+        DocumentResponse response = documentVerificationService.rejectDocument(documentId, reason, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document rejected successfully", httpServletRequest.getRequestURI(), response));
     }
 }

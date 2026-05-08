@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
+import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.DocumentApprovalService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,56 +17,41 @@ public class DocumentApprovalController {
     private final DocumentApprovalService documentApprovalService;
 
     @PostMapping("/{documentId}/request-approval")
-    public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
-    requestApproval(@PathVariable String documentId,
-            HttpServletRequest httpServletRequest) {
-
-        DocumentApprovalResponse response =
-                documentApprovalService.requestApproval(
-                        documentId,
-                        httpServletRequest);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED.value(),
-                        "Approval request created successfully",
-                        httpServletRequest.getRequestURI(),
-                        response));
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> requestApproval(@PathVariable String documentId, HttpServletRequest httpServletRequest) {
+        DocumentApprovalResponse response = documentApprovalService.requestApproval(documentId, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Approval request created successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @PostMapping("/approval/{approvalId}/approve")
-    public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
-    approveDocument(@PathVariable Long approvalId,
-            HttpServletRequest httpServletRequest) {
-
-        DocumentApprovalResponse response =
-                documentApprovalService.approveDocument(
-                        approvalId,
-                        httpServletRequest);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Document approved successfully",
-                        httpServletRequest.getRequestURI(),
-                        response
-                ));
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> approveDocument(@PathVariable Long approvalId, HttpServletRequest httpServletRequest) {
+        DocumentApprovalResponse response = documentApprovalService.approveDocument(approvalId, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Document approved successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @PostMapping("/approval/{approvalId}/reject")
-    public ResponseEntity<ApiResponse<DocumentApprovalResponse>>
-    rejectApproval(@PathVariable Long approvalId, @RequestParam String reason, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> rejectApproval(@PathVariable Long approvalId, @RequestParam String reason, HttpServletRequest httpServletRequest) {
+        DocumentApprovalResponse response = documentApprovalService.rejectApproval(approvalId, reason, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval rejected successfully", httpServletRequest.getRequestURI(), response));
+    }
 
-        DocumentApprovalResponse response =
-                documentApprovalService.rejectApproval(
-                        approvalId,
-                        reason,
-                        httpServletRequest);
+    @GetMapping("/pending")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentApprovalResponse>>> getPendingApprovals(
+            @RequestParam(defaultValue = "0")
+            int page,
+            @RequestParam(defaultValue = "10")
+            int size,
+            @RequestParam(defaultValue = "requestedAt")
+            String sortBy,
+            @RequestParam(defaultValue = "DESC")
+            String direction,
+            HttpServletRequest httpServletRequest) {
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Approval rejected successfully",
-                        httpServletRequest.getRequestURI(),
-                        response));
+        PageResponse<DocumentApprovalResponse> response = documentApprovalService.getPendingApprovals(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Pending approvals fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 }

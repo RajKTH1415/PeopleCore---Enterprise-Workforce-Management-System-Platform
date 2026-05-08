@@ -26,31 +26,14 @@ public class EmployeeCertificationAuditController {
 
     @GetMapping("/{employeeId}/certifications/{certificationId}/history")
     public ResponseEntity<ApiResponse<List<EmployeeCertificationAuditResponse>>>
-    getCertificationHistory(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            HttpServletRequest httpServletRequest) {
-
-        List<EmployeeCertificationAuditResponse> response =
-                employeeCertificationAuditService.getCertificationHistory(
-                        employeeId,
-                        certificationId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(HttpStatus.OK.value(),
-                        "Certification history fetched successfully",
-                        httpServletRequest.getRequestURI(), response));
+    getCertificationHistory(@PathVariable Long employeeId, @PathVariable Long certificationId, HttpServletRequest httpServletRequest) {
+        List<EmployeeCertificationAuditResponse> response = employeeCertificationAuditService.getCertificationHistory(employeeId, certificationId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification history fetched successfully", httpServletRequest.getRequestURI(), response));
     }
-    @GetMapping("/{employeeId}/certifications/{certificationId}/verification")
-    public ResponseEntity<ApiResponse<CertificationVerificationResponse>>
-    getVerificationDetails(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            HttpServletRequest request) {
 
-        CertificationVerificationResponse response =
-                employeeCertificationAuditService.getVerificationDetails(
-                        employeeId,
-                        certificationId);
+    @GetMapping("/{employeeId}/certifications/{certificationId}/verification")
+    public ResponseEntity<ApiResponse<CertificationVerificationResponse>> getVerificationDetails(@PathVariable Long employeeId, @PathVariable Long certificationId, HttpServletRequest request) {
+        CertificationVerificationResponse response = employeeCertificationAuditService.getVerificationDetails(employeeId, certificationId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification verification details fetched successfully", request.getRequestURI(), response));
     }
 }

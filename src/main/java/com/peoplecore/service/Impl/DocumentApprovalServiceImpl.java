@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
+import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.module.DocumentApproval;
 import com.peoplecore.module.EmployeeDocument;
 import com.peoplecore.repository.DocumentApprovalRepository;
@@ -7,14 +8,18 @@ import com.peoplecore.repository.EmployeeDocumentRepository;
 import com.peoplecore.service.DocumentApprovalService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DocumentApprovalServiceImpl
-        implements DocumentApprovalService {
+public class DocumentApprovalServiceImpl implements DocumentApprovalService {
 
     private final DocumentApprovalRepository documentApprovalRepository;
 
@@ -87,24 +92,18 @@ public class DocumentApprovalServiceImpl
     public DocumentApprovalResponse rejectApproval(
             Long approvalId,
             String reason,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
-        DocumentApproval approval =
-                documentApprovalRepository.findById(approvalId)
+        DocumentApproval approval = documentApprovalRepository.findById(approvalId)
                         .orElseThrow(() ->
                                 new RuntimeException("Approval not found"));
 
         approval.setApprovalStatus("REJECTED");
-
         approval.setApprovedBy(1L);
-
         approval.setApprovedAt(LocalDateTime.now());
-
         approval.setRejectionReason(reason);
 
-        DocumentApproval savedApproval =
-                documentApprovalRepository.save(approval);
+        DocumentApproval savedApproval = documentApprovalRepository.save(approval);
 
         EmployeeDocument document =
                 employeeDocumentRepository
@@ -119,6 +118,48 @@ public class DocumentApprovalServiceImpl
         return mapToResponse(savedApproval);
     }
 
+    @Override
+    public PageResponse<DocumentApprovalResponse> getPendingApprovals(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
+    ) {
+
+        Sort sort = direction.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<DocumentApproval> approvalPage =
+                documentApprovalRepository.findByApprovalStatus(
+                        "PENDING",
+                        pageable
+                );
+
+        List<DocumentApprovalResponse> content =
+                approvalPage.getContent()
+                        .stream()
+                        .map(this::mapToResponse)
+                        .toList();
+
+        return PageResponse.<DocumentApprovalResponse>builder()
+                .content(content)
+                .page(approvalPage.getNumber())
+                .size(approvalPage.getSize())
+                .totalElements(approvalPage.getTotalElements())
+                .totalPages(approvalPage.getTotalPages())
+                .numberOfElements(approvalPage.getNumberOfElements())
+                .first(approvalPage.isFirst())
+                .last(approvalPage.isLast())
+                .hasNext(approvalPage.hasNext())
+                .hasPrevious(approvalPage.hasPrevious())
+                .sortBy(sortBy)
+                .direction(direction)
+                .build();
+    }
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval
     ) {

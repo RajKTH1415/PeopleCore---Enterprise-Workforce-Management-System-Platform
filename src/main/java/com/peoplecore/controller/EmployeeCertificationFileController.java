@@ -24,109 +24,43 @@ public class EmployeeCertificationFileController {
     }
 
     @PostMapping("/{employeeId}/certifications/{certificationId}/upload")
-    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> uploadCertificate(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest httpServletRequest) {
-
-        EmployeeCertificationResponse response =
-                employeeCertificationFileService.uploadCertificate(
-                        employeeId,
-                        certificationId,
-                        file);
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> uploadCertificate(@PathVariable Long employeeId, @PathVariable Long certificationId, @RequestParam("file") MultipartFile file, HttpServletRequest httpServletRequest) {
+        EmployeeCertificationResponse response = employeeCertificationFileService.uploadCertificate(employeeId, certificationId, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Certificate uploaded successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @GetMapping("/{employeeId}/certifications/{certificationId}/download")
-    public ResponseEntity<byte[]> downloadCertificate(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId) {
-
-        DownloadCertificateResponse response =
-                employeeCertificationFileService.downloadCertificate(
-                        employeeId,
-                        certificationId);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(response.getContentType()))
-                .header(
+    public ResponseEntity<byte[]> downloadCertificate(@PathVariable Long employeeId, @PathVariable Long certificationId) {
+        DownloadCertificateResponse response = employeeCertificationFileService.downloadCertificate(employeeId, certificationId);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(response.getContentType())).header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + response.getFileName() + "\""
-                )
-                .contentLength(response.getFileSize())
-                .body(response.getFileData());
+                        "attachment; filename=\"" + response.getFileName() + "\"").contentLength(response.getFileSize()).body(response.getFileData());
     }
 
     @GetMapping("/{employeeId}/certifications/{certificationId}/preview")
-    public ResponseEntity<ByteArrayResource> previewCertificate(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId) {
-
-        PreviewCertificateResponse response =
-                employeeCertificationFileService.previewCertificate(
-                        employeeId,
-                        certificationId);
-
-        ByteArrayResource resource =
-                new ByteArrayResource(response.getFileData());
-
-        return ResponseEntity.ok()
-                .contentType(
-                        MediaType.parseMediaType(response.getContentType()))
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + response.getFileName() + "\"")
-                .header("X-Message", response.getMessage())
-                .contentLength(response.getFileSize())
-                .body(resource);
+    public ResponseEntity<ByteArrayResource> previewCertificate(@PathVariable Long employeeId, @PathVariable Long certificationId) {
+        PreviewCertificateResponse response = employeeCertificationFileService.previewCertificate(employeeId, certificationId);
+        ByteArrayResource resource = new ByteArrayResource(response.getFileData());
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(response.getContentType())).header(
+                        HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" +
+                        response.getFileName() + "\"").header("X-Message", response.getMessage()).contentLength(response.getFileSize()).body(resource);
     }
 
     @DeleteMapping("/{employeeId}/certifications/{certificationId}/file")
-    public ResponseEntity<ApiResponse<Void>> deleteCertificateFile(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            HttpServletRequest httpServletRequest) {
-
-        employeeCertificationFileService.deleteCertificateFile(
-                employeeId,
-                certificationId);
-
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        HttpStatus.OK.value(),
-                        "Certificate file deleted successfully",
-                        httpServletRequest.getRequestURI(),
-                        null));
+    public ResponseEntity<ApiResponse<Void>> deleteCertificateFile(@PathVariable Long employeeId, @PathVariable Long certificationId, HttpServletRequest httpServletRequest) {
+        employeeCertificationFileService.deleteCertificateFile(employeeId, certificationId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Certificate file deleted successfully", httpServletRequest.getRequestURI(), null));
     }
 
-    @PutMapping(
-            value = "/{employeeId}/certifications/{certificationId}/file",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> replaceCertificateFile(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest httpServletRequest) {
-
-        EmployeeCertificationResponse response =
-                employeeCertificationFileService.replaceCertificateFile(
-                        employeeId,
-                        certificationId,
-                        file);
+    @PutMapping(value = "/{employeeId}/certifications/{certificationId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> replaceCertificateFile(@PathVariable Long employeeId, @PathVariable Long certificationId, @RequestParam("file") MultipartFile file, HttpServletRequest httpServletRequest) {
+        EmployeeCertificationResponse response = employeeCertificationFileService.replaceCertificateFile(employeeId, certificationId, file);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certificate file replaced successfully", httpServletRequest.getRequestURI(), response));
     }
 
-
     @GetMapping("/{employeeId}/certifications/{certificationId}/url")
-    public ResponseEntity<ApiResponse<String>> getDownloadUrl(
-            @PathVariable Long employeeId,
-            @PathVariable Long certificationId,
-            HttpServletRequest httpServletRequest) {
-
-        String url = employeeCertificationFileService
-                .generateDownloadUrl(employeeId, certificationId);
+    public ResponseEntity<ApiResponse<String>> getDownloadUrl(@PathVariable Long employeeId, @PathVariable Long certificationId, HttpServletRequest httpServletRequest) {
+        String url = employeeCertificationFileService.generateDownloadUrl(employeeId, certificationId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Download URL generated successfully", httpServletRequest.getRequestURI(), url));
 
     }
