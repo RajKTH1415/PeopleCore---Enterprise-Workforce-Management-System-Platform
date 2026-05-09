@@ -24,4 +24,10 @@ public interface DocumentApprovalRepository
             Long requestedBy,
             Pageable pageable
     );
+
+    Page<DocumentApproval> findByApproverIdAndApprovalStatus(
+            Long approverId,
+            String approvalStatus,
+            Pageable pageable
+    );
 }

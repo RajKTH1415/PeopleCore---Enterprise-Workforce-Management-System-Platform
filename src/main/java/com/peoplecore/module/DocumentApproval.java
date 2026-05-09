@@ -35,6 +35,9 @@ public class DocumentApproval {
     @Column(name = "approved_by")
     private Long approvedBy;
 
+    @Column(name = "approver_id")
+    private Long approverId;
+
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
@@ -43,4 +46,5 @@ public class DocumentApproval {
 
     @Column(name = "remarks")
     private String remarks;
+
 }

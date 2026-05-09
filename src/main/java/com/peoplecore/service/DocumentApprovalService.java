@@ -66,4 +66,12 @@ public interface DocumentApprovalService {
             String direction,
             HttpServletRequest request
     );
+
+    PageResponse<DocumentApprovalResponse> getMyPendingActions(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
+    );
 }

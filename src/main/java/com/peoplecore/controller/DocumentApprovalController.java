@@ -158,4 +158,29 @@ public class DocumentApprovalController {
                         httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "My approvals fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+    @GetMapping("/my-pending-actions")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentApprovalResponse>>> getMyPendingActions(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "requestedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "DESC")
+            String direction,
+
+            HttpServletRequest httpServletRequest) {
+
+        PageResponse<DocumentApprovalResponse> response = documentApprovalService.getMyPendingActions(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Pending action items fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
 }
