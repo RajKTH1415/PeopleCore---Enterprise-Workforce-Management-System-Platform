@@ -32,8 +32,12 @@ public interface DocumentApprovalService {
             HttpServletRequest request
     );
 
-    List<DocumentApprovalResponse> getApprovalHistory(
+    PageResponse<DocumentApprovalResponse> getApprovalHistory(
             String documentId,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
             HttpServletRequest request
     );
 }

@@ -162,8 +162,12 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
     }
 
     @Override
-    public List<DocumentApprovalResponse> getApprovalHistory(
+    public PageResponse<DocumentApprovalResponse> getApprovalHistory(
             String documentId,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
             HttpServletRequest request
     ) {
 
@@ -172,15 +176,38 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                         .orElseThrow(() ->
                                 new RuntimeException("Document not found"));
 
-        List<DocumentApproval> approvals =
-                documentApprovalRepository
-                        .findByDocumentIdOrderByRequestedAtDesc(
-                                document.getDocumentId()
-                        );
+        Sort sort = direction.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
 
-        return approvals.stream()
-                .map(this::mapToResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<DocumentApproval> approvalPage =
+                documentApprovalRepository.findByDocumentId(
+                        document.getDocumentId(),
+                        pageable
+                );
+
+        List<DocumentApprovalResponse> content =
+                approvalPage.getContent()
+                        .stream()
+                        .map(this::mapToResponse)
+                        .toList();
+
+        return PageResponse.<DocumentApprovalResponse>builder()
+                .content(content)
+                .page(approvalPage.getNumber())
+                .size(approvalPage.getSize())
+                .totalElements(approvalPage.getTotalElements())
+                .totalPages(approvalPage.getTotalPages())
+                .numberOfElements(approvalPage.getNumberOfElements())
+                .first(approvalPage.isFirst())
+                .last(approvalPage.isLast())
+                .hasNext(approvalPage.hasNext())
+                .hasPrevious(approvalPage.hasPrevious())
+                .sortBy(sortBy)
+                .direction(direction)
+                .build();
     }
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval

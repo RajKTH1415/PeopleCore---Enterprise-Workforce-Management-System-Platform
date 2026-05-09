@@ -5,14 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-
 public interface DocumentApprovalRepository
         extends JpaRepository<DocumentApproval, Long> {
 
 
-    List<DocumentApproval> findByDocumentIdOrderByRequestedAtDesc(
-            String documentId
+    Page<DocumentApproval> findByDocumentId(
+            String documentId,
+            Pageable pageable
     );
 
     Page<DocumentApproval> findByApprovalStatus(

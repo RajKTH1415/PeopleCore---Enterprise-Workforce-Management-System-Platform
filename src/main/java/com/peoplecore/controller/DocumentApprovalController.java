@@ -59,25 +59,30 @@ public class DocumentApprovalController {
 
 
     @GetMapping("/{documentId}/approvals")
-    public ResponseEntity<ApiResponse<List<DocumentApprovalResponse>>> getApprovalHistory(
+    public ResponseEntity<ApiResponse<PageResponse<DocumentApprovalResponse>>> getApprovalHistory(
             @PathVariable String documentId,
-            HttpServletRequest httpServletRequest
-    ) {
 
-        List<DocumentApprovalResponse> response =
-                documentApprovalService.getApprovalHistory(
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "requestedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "DESC")
+            String direction,
+
+            HttpServletRequest httpServletRequest) {
+
+        PageResponse<DocumentApprovalResponse> response = documentApprovalService.getApprovalHistory(
                         documentId,
-                        httpServletRequest
-                );
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.OK.value(),
-                                "Approval history fetched successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval history fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 }
