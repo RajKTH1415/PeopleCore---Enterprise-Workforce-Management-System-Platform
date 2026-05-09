@@ -1,4 +1,5 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.DocumentApprovalService;
@@ -124,5 +125,11 @@ public class DocumentApprovalController {
                         direction,
                         httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approvals fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+
+    @GetMapping("/approval/dashboard")
+    public ResponseEntity<ApiResponse<ApprovalDashboardResponse>> getApprovalDashboard(HttpServletRequest httpServletRequest) {
+        ApprovalDashboardResponse response = documentApprovalService.getApprovalDashboard(httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval dashboard fetched successfully",httpServletRequest.getRequestURI(), response));
     }
 }

@@ -1,4 +1,5 @@
 package com.peoplecore.service.Impl;
+import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.module.DocumentApproval;
@@ -299,9 +300,27 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .build();
     }
 
+    @Override
+    public ApprovalDashboardResponse getApprovalDashboard(HttpServletRequest request) {
+
+        long pending = documentApprovalRepository.countByApprovalStatus("PENDING");
+
+        long approved = documentApprovalRepository.countByApprovalStatus("APPROVED");
+
+        long rejected = documentApprovalRepository.countByApprovalStatus("REJECTED");
+
+        long cancelled = documentApprovalRepository.countByApprovalStatus("CANCELLED");
+
+        return ApprovalDashboardResponse.builder()
+                .pending(pending)
+                .approved(approved)
+                .rejected(rejected)
+                .cancelled(cancelled)
+                .build();
+    }
+
     private DocumentApprovalResponse mapToResponse(
-            DocumentApproval approval
-    ) {
+            DocumentApproval approval) {
 
         return DocumentApprovalResponse.builder()
                 .approvalId(approval.getId())

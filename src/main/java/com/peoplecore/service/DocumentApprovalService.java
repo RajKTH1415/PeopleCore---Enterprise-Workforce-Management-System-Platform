@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 
+import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,6 +53,10 @@ public interface DocumentApprovalService {
             int size,
             String sortBy,
             String direction,
+            HttpServletRequest request
+    );
+
+    ApprovalDashboardResponse getApprovalDashboard(
             HttpServletRequest request
     );
 }

@@ -17,4 +17,6 @@ public interface DocumentApprovalRepository
     Page<DocumentApproval> findByApprovalStatus(
             String approvalStatus,
             Pageable pageable);
+
+    long countByApprovalStatus(String approvalStatus);
 }
