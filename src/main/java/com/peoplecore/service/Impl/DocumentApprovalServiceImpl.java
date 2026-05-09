@@ -209,6 +209,18 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .direction(direction)
                 .build();
     }
+
+    @Override
+    public DocumentApprovalResponse getApprovalById(
+            Long approvalId,
+            HttpServletRequest request) {
+
+        DocumentApproval approval = documentApprovalRepository.findById(approvalId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Approval not found"));
+        return mapToResponse(approval);
+    }
+
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval
     ) {

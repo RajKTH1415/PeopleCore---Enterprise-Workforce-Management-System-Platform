@@ -40,4 +40,6 @@ public interface DocumentApprovalService {
             String direction,
             HttpServletRequest request
     );
+
+    DocumentApprovalResponse getApprovalById(Long approvalId , HttpServletRequest httpServletRequest);
 }
