@@ -89,4 +89,10 @@ public class DocumentApprovalController {
         DocumentApprovalResponse response = documentApprovalService.getApprovalById(approvalId, httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval details fetched successfully",httpServletRequest.getRequestURI(), response));
     }
+
+    @PostMapping("/approval/{approvalId}/cancel")
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> cancelApproval(@PathVariable Long approvalId, HttpServletRequest httpServletRequest) {
+        DocumentApprovalResponse response = documentApprovalService.cancelApproval(approvalId, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Approval request cancelled successfully", httpServletRequest.getRequestURI(), response));
+    }
 }

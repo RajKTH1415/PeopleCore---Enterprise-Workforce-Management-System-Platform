@@ -221,6 +221,41 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
         return mapToResponse(approval);
     }
 
+    @Override
+    public DocumentApprovalResponse cancelApproval(
+            Long approvalId,
+            HttpServletRequest request
+    ) {
+
+        DocumentApproval approval =
+                documentApprovalRepository.findById(approvalId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Approval not found"));
+
+        if (!approval.getApprovalStatus().equalsIgnoreCase("PENDING")) {
+            throw new RuntimeException(
+                    "Only pending approvals can be cancelled"
+            );
+        }
+
+        approval.setApprovalStatus("CANCELLED");
+
+        DocumentApproval savedApproval =
+                documentApprovalRepository.save(approval);
+
+        EmployeeDocument document =
+                employeeDocumentRepository
+                        .findByDocumentId(approval.getDocumentId())
+                        .orElseThrow(() ->
+                                new RuntimeException("Document not found"));
+
+        document.setStatus("UPLOADED");
+
+        employeeDocumentRepository.save(document);
+
+        return mapToResponse(savedApproval);
+    }
+
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval
     ) {

@@ -5,8 +5,6 @@ import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.List;
-
 public interface DocumentApprovalService {
 
     DocumentApprovalResponse requestApproval(
@@ -42,4 +40,9 @@ public interface DocumentApprovalService {
     );
 
     DocumentApprovalResponse getApprovalById(Long approvalId , HttpServletRequest httpServletRequest);
+
+    DocumentApprovalResponse cancelApproval(
+            Long approvalId,
+            HttpServletRequest request
+    );
 }
