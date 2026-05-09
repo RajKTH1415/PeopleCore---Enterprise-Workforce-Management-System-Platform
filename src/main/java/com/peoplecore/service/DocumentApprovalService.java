@@ -45,4 +45,13 @@ public interface DocumentApprovalService {
             Long approvalId,
             HttpServletRequest request
     );
+
+    PageResponse<DocumentApprovalResponse> getApprovalsByStatus(
+            String status,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
+    );
 }

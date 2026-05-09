@@ -95,4 +95,34 @@ public class DocumentApprovalController {
         DocumentApprovalResponse response = documentApprovalService.cancelApproval(approvalId, httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(),"Approval request cancelled successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @GetMapping("/approvals")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentApprovalResponse>>> getApprovalsByStatus(
+
+            @RequestParam String status,
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "requestedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "DESC")
+            String direction,
+
+            HttpServletRequest httpServletRequest) {
+
+        PageResponse<DocumentApprovalResponse> response =
+                documentApprovalService.getApprovalsByStatus(
+                        status,
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approvals fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
 }
