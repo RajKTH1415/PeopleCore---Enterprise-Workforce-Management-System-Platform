@@ -319,6 +319,51 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .build();
     }
 
+    @Override
+    public PageResponse<DocumentApprovalResponse> getMyApprovals(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
+    ) {
+
+        Long loggedInUserId = 1L;
+
+        Sort sort = direction.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<DocumentApproval> approvalPage =
+                documentApprovalRepository.findByRequestedBy(
+                        loggedInUserId,
+                        pageable
+                );
+
+        List<DocumentApprovalResponse> content =
+                approvalPage.getContent()
+                        .stream()
+                        .map(this::mapToResponse)
+                        .toList();
+
+        return PageResponse.<DocumentApprovalResponse>builder()
+                .content(content)
+                .page(approvalPage.getNumber())
+                .size(approvalPage.getSize())
+                .totalElements(approvalPage.getTotalElements())
+                .totalPages(approvalPage.getTotalPages())
+                .numberOfElements(approvalPage.getNumberOfElements())
+                .first(approvalPage.isFirst())
+                .last(approvalPage.isLast())
+                .hasNext(approvalPage.hasNext())
+                .hasPrevious(approvalPage.hasPrevious())
+                .sortBy(sortBy)
+                .direction(direction)
+                .build();
+    }
+
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval) {
 

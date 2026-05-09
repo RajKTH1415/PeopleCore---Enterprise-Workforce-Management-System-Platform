@@ -132,4 +132,30 @@ public class DocumentApprovalController {
         ApprovalDashboardResponse response = documentApprovalService.getApprovalDashboard(httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval dashboard fetched successfully",httpServletRequest.getRequestURI(), response));
     }
+
+    @GetMapping("/my-approvals")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentApprovalResponse>>> getMyApprovals(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "requestedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "DESC")
+            String direction,
+
+            HttpServletRequest httpServletRequest) {
+
+        PageResponse<DocumentApprovalResponse> response = documentApprovalService.getMyApprovals(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "My approvals fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
 }

@@ -57,6 +57,13 @@ public interface DocumentApprovalService {
     );
 
     ApprovalDashboardResponse getApprovalDashboard(
+            HttpServletRequest request);
+
+    PageResponse<DocumentApprovalResponse> getMyApprovals(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
             HttpServletRequest request
     );
 }
