@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/documents")
 @RequiredArgsConstructor
@@ -53,5 +55,29 @@ public class DocumentApprovalController {
                         direction,
                 httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Pending approvals fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+
+
+    @GetMapping("/{documentId}/approvals")
+    public ResponseEntity<ApiResponse<List<DocumentApprovalResponse>>> getApprovalHistory(
+            @PathVariable String documentId,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalResponse> response =
+                documentApprovalService.getApprovalHistory(
+                        documentId,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Approval history fetched successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
     }
 }

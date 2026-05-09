@@ -5,6 +5,8 @@ import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
 public interface DocumentApprovalService {
 
     DocumentApprovalResponse requestApproval(
@@ -27,6 +29,11 @@ public interface DocumentApprovalService {
             int size,
             String sortBy,
             String direction,
+            HttpServletRequest request
+    );
+
+    List<DocumentApprovalResponse> getApprovalHistory(
+            String documentId,
             HttpServletRequest request
     );
 }

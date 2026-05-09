@@ -160,6 +160,28 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .direction(direction)
                 .build();
     }
+
+    @Override
+    public List<DocumentApprovalResponse> getApprovalHistory(
+            String documentId,
+            HttpServletRequest request
+    ) {
+
+        EmployeeDocument document =
+                employeeDocumentRepository.findByDocumentId(documentId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Document not found"));
+
+        List<DocumentApproval> approvals =
+                documentApprovalRepository
+                        .findByDocumentIdOrderByRequestedAtDesc(
+                                document.getDocumentId()
+                        );
+
+        return approvals.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
     private DocumentApprovalResponse mapToResponse(
             DocumentApproval approval
     ) {
