@@ -4,6 +4,7 @@ import com.peoplecore.module.DocumentApproval;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface DocumentApprovalRepository
         extends JpaRepository<DocumentApproval, Long> {
@@ -30,4 +31,13 @@ public interface DocumentApprovalRepository
             String approvalStatus,
             Pageable pageable
     );
+
+    @Query("""
+       SELECT AVG(
+           EXTRACT(EPOCH FROM (d.approvedAt - d.requestedAt)) / 3600
+       )
+       FROM DocumentApproval d
+       WHERE d.approvedAt IS NOT NULL
+       """)
+    Double getAverageApprovalTimeInHours();
 }

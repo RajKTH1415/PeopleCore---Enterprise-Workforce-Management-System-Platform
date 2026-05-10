@@ -5,10 +5,7 @@ import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
-import com.peoplecore.dto.response.ApprovalAuditLogResponse;
-import com.peoplecore.dto.response.ApprovalDashboardResponse;
-import com.peoplecore.dto.response.DocumentApprovalResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -109,6 +106,9 @@ public interface DocumentApprovalService {
     DocumentApprovalResponse escalateApproval(
             Long approvalId,
             ApprovalEscalationRequest request,
+            HttpServletRequest httpServletRequest
+    );
+    ApprovalStatisticsResponse getApprovalStatistics(
             HttpServletRequest httpServletRequest
     );
 }

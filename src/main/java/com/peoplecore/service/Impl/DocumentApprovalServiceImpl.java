@@ -3,10 +3,7 @@ import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
-import com.peoplecore.dto.response.ApprovalAuditLogResponse;
-import com.peoplecore.dto.response.ApprovalDashboardResponse;
-import com.peoplecore.dto.response.DocumentApprovalResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import com.peoplecore.module.ApprovalAuditLog;
 import com.peoplecore.module.DocumentApproval;
 import com.peoplecore.module.EmployeeDocument;
@@ -676,6 +673,68 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
         approvalAuditLogRepository.save(auditLog);
 
         return mapToResponse(savedApproval);
+    }
+
+    @Override
+    public ApprovalStatisticsResponse getApprovalStatistics(
+            HttpServletRequest httpServletRequest
+    ) {
+
+        long approved =
+                documentApprovalRepository.countByApprovalStatus(
+                        "APPROVED"
+                );
+
+        long rejected =
+                documentApprovalRepository.countByApprovalStatus(
+                        "REJECTED"
+                );
+
+        long pending =
+                documentApprovalRepository.countByApprovalStatus(
+                        "PENDING"
+                );
+
+        long cancelled =
+                documentApprovalRepository.countByApprovalStatus(
+                        "CANCELLED"
+                );
+
+        long total =
+                approved + rejected + pending + cancelled;
+
+        double approvalRate =
+                total > 0
+                        ? ((double) approved / total) * 100
+                        : 0;
+
+        double rejectionRate =
+                total > 0
+                        ? ((double) rejected / total) * 100
+                        : 0;
+
+        Double averageApprovalTime =
+                documentApprovalRepository
+                        .getAverageApprovalTimeInHours();
+
+        return ApprovalStatisticsResponse.builder()
+                .totalApprovals(total)
+                .approvedCount(approved)
+                .rejectedCount(rejected)
+                .pendingCount(pending)
+                .cancelledCount(cancelled)
+                .approvalRate(
+                        Math.round(approvalRate * 100.0) / 100.0
+                )
+                .rejectionRate(
+                        Math.round(rejectionRate * 100.0) / 100.0
+                )
+                .averageApprovalTimeInHours(
+                        averageApprovalTime != null
+                                ? Math.round(averageApprovalTime * 100.0) / 100.0
+                                : 0
+                )
+                .build();
     }
 
     private DocumentApprovalResponse mapToResponse(

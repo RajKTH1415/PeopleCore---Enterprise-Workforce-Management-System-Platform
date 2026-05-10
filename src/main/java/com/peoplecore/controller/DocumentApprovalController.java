@@ -3,10 +3,7 @@ import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
-import com.peoplecore.dto.response.ApprovalAuditLogResponse;
-import com.peoplecore.dto.response.ApprovalDashboardResponse;
-import com.peoplecore.dto.response.DocumentApprovalResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import com.peoplecore.service.DocumentApprovalService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -327,6 +324,26 @@ public class DocumentApprovalController {
                         ApiResponse.success(
                                 HttpStatus.OK.value(),
                                 "Approval escalated successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+    @GetMapping("/approval/statistics")
+    public ResponseEntity<ApiResponse<ApprovalStatisticsResponse>> getApprovalStatistics(
+            HttpServletRequest httpServletRequest
+    ) {
+
+        ApprovalStatisticsResponse response =
+                documentApprovalService.getApprovalStatistics(
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Approval statistics fetched successfully",
                                 httpServletRequest.getRequestURI(),
                                 response
                         )
