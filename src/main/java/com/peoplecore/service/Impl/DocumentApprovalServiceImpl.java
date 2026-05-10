@@ -1,4 +1,5 @@
 package com.peoplecore.service.Impl;
+import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
@@ -614,6 +615,61 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                                         + oldRemarks
                                         + " to: "
                                         + request.getRemarks()
+                        )
+                        .build();
+
+        approvalAuditLogRepository.save(auditLog);
+
+        return mapToResponse(savedApproval);
+    }
+
+    @Override
+    public DocumentApprovalResponse escalateApproval(
+            Long approvalId,
+            ApprovalEscalationRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        DocumentApproval approval =
+                documentApprovalRepository.findById(approvalId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Approval not found"));
+
+        if (!approval.getApprovalStatus()
+                .equalsIgnoreCase("PENDING")) {
+
+            throw new RuntimeException(
+                    "Only pending approvals can be escalated"
+            );
+        }
+
+        Long oldApproverId = approval.getApproverId();
+
+        approval.setApproverId(request.getEscalatedTo());
+
+        approval.setRemarks(
+                "Escalated: " + request.getEscalationReason()
+        );
+
+        DocumentApproval savedApproval =
+                documentApprovalRepository.save(approval);
+
+        ApprovalAuditLog auditLog =
+                ApprovalAuditLog.builder()
+                        .approvalId(savedApproval.getId())
+                        .documentId(savedApproval.getDocumentId())
+                        .action("ESCALATED")
+                        .oldStatus("PENDING")
+                        .newStatus("PENDING")
+                        .actionBy(1L)
+                        .actionAt(LocalDateTime.now())
+                        .remarks(
+                                "Approval escalated from approver "
+                                        + oldApproverId
+                                        + " to "
+                                        + request.getEscalatedTo()
+                                        + ". Reason: "
+                                        + request.getEscalationReason()
                         )
                         .build();
 

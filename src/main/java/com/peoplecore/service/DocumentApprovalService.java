@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 
+import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
@@ -103,6 +104,11 @@ public interface DocumentApprovalService {
     DocumentApprovalResponse updateApprovalRemarks(
             Long approvalId,
             ApprovalRemarksRequest request,
+            HttpServletRequest httpServletRequest
+    );
+    DocumentApprovalResponse escalateApproval(
+            Long approvalId,
+            ApprovalEscalationRequest request,
             HttpServletRequest httpServletRequest
     );
 }

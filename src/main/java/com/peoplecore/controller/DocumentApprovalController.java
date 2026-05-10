@@ -1,4 +1,5 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.request.ApprovalEscalationRequest;
 import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
@@ -299,6 +300,33 @@ public class DocumentApprovalController {
                         ApiResponse.success(
                                 HttpStatus.OK.value(),
                                 "Approval remarks updated successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+    @PostMapping("/approval/{approvalId}/escalate")
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> escalateApproval(
+
+            @PathVariable Long approvalId,
+
+            @RequestBody ApprovalEscalationRequest requestBody,
+
+            HttpServletRequest httpServletRequest
+    ) {
+
+        DocumentApprovalResponse response =
+                documentApprovalService.escalateApproval(
+                        approvalId,
+                        requestBody,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Approval escalated successfully",
                                 httpServletRequest.getRequestURI(),
                                 response
                         )
