@@ -32,12 +32,12 @@ public interface DocumentApprovalRepository
             Pageable pageable
     );
 
-    @Query("""
-       SELECT AVG(
-           EXTRACT(EPOCH FROM (d.approvedAt - d.requestedAt)) / 3600
-       )
-       FROM DocumentApproval d
-       WHERE d.approvedAt IS NOT NULL
-       """)
+    @Query(value = """
+        SELECT AVG(
+            EXTRACT(EPOCH FROM (approved_at - requested_at)) / 3600
+        )
+        FROM document_approvals
+        WHERE approved_at IS NOT NULL
+        """, nativeQuery = true)
     Double getAverageApprovalTimeInHours();
 }
