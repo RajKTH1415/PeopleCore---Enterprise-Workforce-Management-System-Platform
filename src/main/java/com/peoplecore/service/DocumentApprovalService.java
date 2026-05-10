@@ -3,6 +3,7 @@ package com.peoplecore.service;
 
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
+import com.peoplecore.dto.response.ApprovalAuditLogResponse;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -87,5 +88,14 @@ public interface DocumentApprovalService {
     List<DocumentApprovalResponse> bulkReject(
             BulkRejectRequest request,
             HttpServletRequest httpServletRequest
+    );
+
+    PageResponse<ApprovalAuditLogResponse> getApprovalAuditLogs(
+            Long approvalId,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
     );
 }

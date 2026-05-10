@@ -1,11 +1,14 @@
 package com.peoplecore.service.Impl;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
+import com.peoplecore.dto.response.ApprovalAuditLogResponse;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.module.ApprovalAuditLog;
 import com.peoplecore.module.DocumentApproval;
 import com.peoplecore.module.EmployeeDocument;
+import com.peoplecore.repository.ApprovalAuditLogRepository;
 import com.peoplecore.repository.DocumentApprovalRepository;
 import com.peoplecore.repository.EmployeeDocumentRepository;
 import com.peoplecore.service.DocumentApprovalService;
@@ -27,6 +30,7 @@ import java.util.List;
 public class DocumentApprovalServiceImpl implements DocumentApprovalService {
 
     private final DocumentApprovalRepository documentApprovalRepository;
+    private final ApprovalAuditLogRepository approvalAuditLogRepository;
 
     private final EmployeeDocumentRepository employeeDocumentRepository;
 
@@ -514,6 +518,66 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
         }
 
         return responses;
+    }
+
+    @Override
+    public PageResponse<ApprovalAuditLogResponse> getApprovalAuditLogs(
+            Long approvalId,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            HttpServletRequest request
+    ) {
+
+        Sort sort = direction.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ApprovalAuditLog> auditPage =
+                approvalAuditLogRepository.findByApprovalId(
+                        approvalId,
+                        pageable
+                );
+
+        List<ApprovalAuditLogResponse> content =
+                auditPage.getContent()
+                        .stream()
+                        .map(audit ->
+                                ApprovalAuditLogResponse.builder()
+                                        .auditId(audit.getId())
+                                        .approvalId(audit.getApprovalId())
+                                        .documentId(audit.getDocumentId())
+                                        .action(audit.getAction())
+                                        .oldStatus(audit.getOldStatus())
+                                        .newStatus(audit.getNewStatus())
+                                        .actionBy(
+                                                audit.getActionBy() != null
+                                                        ? audit.getActionBy().toString()
+                                                        : null
+                                        )
+                                        .actionAt(audit.getActionAt())
+                                        .remarks(audit.getRemarks())
+                                        .build()
+                        )
+                        .toList();
+
+        return PageResponse.<ApprovalAuditLogResponse>builder()
+                .content(content)
+                .page(auditPage.getNumber())
+                .size(auditPage.getSize())
+                .totalElements(auditPage.getTotalElements())
+                .totalPages(auditPage.getTotalPages())
+                .numberOfElements(auditPage.getNumberOfElements())
+                .first(auditPage.isFirst())
+                .last(auditPage.isLast())
+                .hasNext(auditPage.hasNext())
+                .hasPrevious(auditPage.hasPrevious())
+                .sortBy(sortBy)
+                .direction(direction)
+                .build();
     }
 
     private DocumentApprovalResponse mapToResponse(
