@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 
+import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
 import com.peoplecore.dto.response.ApprovalAuditLogResponse;
@@ -97,5 +98,11 @@ public interface DocumentApprovalService {
             String sortBy,
             String direction,
             HttpServletRequest request
+    );
+
+    DocumentApprovalResponse updateApprovalRemarks(
+            Long approvalId,
+            ApprovalRemarksRequest request,
+            HttpServletRequest httpServletRequest
     );
 }

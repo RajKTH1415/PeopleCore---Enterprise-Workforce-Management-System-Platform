@@ -1,4 +1,5 @@
 package com.peoplecore.service.Impl;
+import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
 import com.peoplecore.dto.response.ApprovalAuditLogResponse;
@@ -578,6 +579,47 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .sortBy(sortBy)
                 .direction(direction)
                 .build();
+    }
+
+    @Override
+    public DocumentApprovalResponse updateApprovalRemarks(
+            Long approvalId,
+            ApprovalRemarksRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        DocumentApproval approval =
+                documentApprovalRepository.findById(approvalId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Approval not found"));
+
+        String oldRemarks = approval.getRemarks();
+
+        approval.setRemarks(request.getRemarks());
+
+        DocumentApproval savedApproval =
+                documentApprovalRepository.save(approval);
+
+        ApprovalAuditLog auditLog =
+                ApprovalAuditLog.builder()
+                        .approvalId(savedApproval.getId())
+                        .documentId(savedApproval.getDocumentId())
+                        .action("REMARKS_UPDATED")
+                        .oldStatus(savedApproval.getApprovalStatus())
+                        .newStatus(savedApproval.getApprovalStatus())
+                        .actionBy(1L)
+                        .actionAt(LocalDateTime.now())
+                        .remarks(
+                                "Remarks updated from: "
+                                        + oldRemarks
+                                        + " to: "
+                                        + request.getRemarks()
+                        )
+                        .build();
+
+        approvalAuditLogRepository.save(auditLog);
+
+        return mapToResponse(savedApproval);
     }
 
     private DocumentApprovalResponse mapToResponse(

@@ -1,4 +1,5 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.request.ApprovalRemarksRequest;
 import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.request.BulkRejectRequest;
 import com.peoplecore.dto.response.ApprovalAuditLogResponse;
@@ -270,6 +271,34 @@ public class DocumentApprovalController {
                         ApiResponse.success(
                                 HttpStatus.OK.value(),
                                 "Approval audit logs fetched successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+
+    @PatchMapping("/approval/{approvalId}/remarks")
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> updateApprovalRemarks(
+
+            @PathVariable Long approvalId,
+
+            @RequestBody ApprovalRemarksRequest requestBody,
+
+            HttpServletRequest httpServletRequest
+    ) {
+
+        DocumentApprovalResponse response =
+                documentApprovalService.updateApprovalRemarks(
+                        approvalId,
+                        requestBody,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Approval remarks updated successfully",
                                 httpServletRequest.getRequestURI(),
                                 response
                         )
