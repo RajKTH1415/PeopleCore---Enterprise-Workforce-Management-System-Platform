@@ -1,4 +1,5 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -182,5 +185,28 @@ public class DocumentApprovalController {
                         direction,
                         httpServletRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Pending action items fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+
+    @PostMapping("/approvals/bulk-approve")
+    public ResponseEntity<ApiResponse<List<DocumentApprovalResponse>>> bulkApprove(
+            @RequestBody BulkApprovalRequest requestBody,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalResponse> response =
+                documentApprovalService.bulkApprove(
+                        requestBody,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Bulk approvals completed successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
     }
 }

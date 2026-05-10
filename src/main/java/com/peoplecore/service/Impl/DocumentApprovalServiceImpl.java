@@ -1,4 +1,5 @@
 package com.peoplecore.service.Impl;
+import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -14,8 +15,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -409,6 +412,55 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                 .sortBy(sortBy)
                 .direction(direction)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public List<DocumentApprovalResponse> bulkApprove(
+            BulkApprovalRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalResponse> responses = new ArrayList<>();
+
+        for (Long approvalId : request.getApprovalIds()) {
+
+            DocumentApproval approval =
+                    documentApprovalRepository.findById(approvalId)
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Approval not found: " + approvalId
+                                    ));
+
+            if (!approval.getApprovalStatus()
+                    .equalsIgnoreCase("PENDING")) {
+
+                continue;
+            }
+
+            approval.setApprovalStatus("APPROVED");
+            approval.setApprovedBy(1L);
+            approval.setApprovedAt(LocalDateTime.now());
+
+            DocumentApproval savedApproval =
+                    documentApprovalRepository.save(approval);
+
+            EmployeeDocument document =
+                    employeeDocumentRepository
+                            .findByDocumentId(
+                                    approval.getDocumentId()
+                            )
+                            .orElseThrow(() ->
+                                    new RuntimeException("Document not found"));
+
+            document.setStatus("APPROVED");
+
+            employeeDocumentRepository.save(document);
+
+            responses.add(mapToResponse(savedApproval));
+        }
+
+        return responses;
     }
 
     private DocumentApprovalResponse mapToResponse(

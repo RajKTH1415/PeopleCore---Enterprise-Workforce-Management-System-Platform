@@ -1,10 +1,13 @@
 package com.peoplecore.service;
 
 
+import com.peoplecore.dto.request.BulkApprovalRequest;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 public interface DocumentApprovalService {
 
@@ -73,5 +76,10 @@ public interface DocumentApprovalService {
             String sortBy,
             String direction,
             HttpServletRequest request
+    );
+
+    List<DocumentApprovalResponse> bulkApprove(
+            BulkApprovalRequest request,
+            HttpServletRequest httpServletRequest
     );
 }
