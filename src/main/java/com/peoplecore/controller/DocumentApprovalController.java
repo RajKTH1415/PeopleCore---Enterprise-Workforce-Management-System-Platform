@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.BulkApprovalRequest;
+import com.peoplecore.dto.request.BulkRejectRequest;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -204,6 +205,29 @@ public class DocumentApprovalController {
                         ApiResponse.success(
                                 HttpStatus.OK.value(),
                                 "Bulk approvals completed successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+
+    @PostMapping("/approvals/bulk-reject")
+    public ResponseEntity<ApiResponse<List<DocumentApprovalResponse>>> bulkReject(
+            @RequestBody BulkRejectRequest requestBody,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalResponse> response =
+                documentApprovalService.bulkReject(
+                        requestBody,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Bulk rejection completed successfully",
                                 httpServletRequest.getRequestURI(),
                                 response
                         )

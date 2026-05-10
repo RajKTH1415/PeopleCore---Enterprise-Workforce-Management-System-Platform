@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 import com.peoplecore.dto.request.BulkApprovalRequest;
+import com.peoplecore.dto.request.BulkRejectRequest;
 import com.peoplecore.dto.response.ApprovalDashboardResponse;
 import com.peoplecore.dto.response.DocumentApprovalResponse;
 import com.peoplecore.dto.response.PageResponse;
@@ -454,6 +455,58 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                                     new RuntimeException("Document not found"));
 
             document.setStatus("APPROVED");
+
+            employeeDocumentRepository.save(document);
+
+            responses.add(mapToResponse(savedApproval));
+        }
+
+        return responses;
+    }
+
+    @Override
+    @Transactional
+    public List<DocumentApprovalResponse> bulkReject(
+            BulkRejectRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalResponse> responses = new ArrayList<>();
+
+        for (Long approvalId : request.getApprovalIds()) {
+
+            DocumentApproval approval =
+                    documentApprovalRepository.findById(approvalId)
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Approval not found: " + approvalId
+                                    ));
+
+            if (!approval.getApprovalStatus()
+                    .equalsIgnoreCase("PENDING")) {
+
+                continue;
+            }
+
+            approval.setApprovalStatus("REJECTED");
+            approval.setApprovedBy(1L);
+            approval.setApprovedAt(LocalDateTime.now());
+            approval.setRejectionReason(
+                    request.getRejectionReason()
+            );
+
+            DocumentApproval savedApproval =
+                    documentApprovalRepository.save(approval);
+
+            EmployeeDocument document =
+                    employeeDocumentRepository
+                            .findByDocumentId(
+                                    approval.getDocumentId()
+                            )
+                            .orElseThrow(() ->
+                                    new RuntimeException("Document not found"));
+
+            document.setStatus("REJECTED");
 
             employeeDocumentRepository.save(document);
 
