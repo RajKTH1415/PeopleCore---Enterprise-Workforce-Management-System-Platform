@@ -62,6 +62,5 @@ public class EmployeeCertificationFileController {
     public ResponseEntity<ApiResponse<String>> getDownloadUrl(@PathVariable Long employeeId, @PathVariable Long certificationId, HttpServletRequest httpServletRequest) {
         String url = employeeCertificationFileService.generateDownloadUrl(employeeId, certificationId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Download URL generated successfully", httpServletRequest.getRequestURI(), url));
-
     }
 }

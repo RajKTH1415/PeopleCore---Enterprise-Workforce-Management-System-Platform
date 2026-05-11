@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -301,78 +300,20 @@ public class DocumentApprovalController {
                 );
     }
     @PostMapping("/approval/{approvalId}/escalate")
-    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> escalateApproval(
-
-            @PathVariable Long approvalId,
-
-            @RequestBody ApprovalEscalationRequest requestBody,
-
-            HttpServletRequest httpServletRequest
-    ) {
-
-        DocumentApprovalResponse response =
-                documentApprovalService.escalateApproval(
-                        approvalId,
-                        requestBody,
-                        httpServletRequest
-                );
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.OK.value(),
-                                "Approval escalated successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+    public ResponseEntity<ApiResponse<DocumentApprovalResponse>> escalateApproval(@PathVariable Long approvalId, @RequestBody ApprovalEscalationRequest requestBody, HttpServletRequest httpServletRequest) {
+        DocumentApprovalResponse response = documentApprovalService.escalateApproval(approvalId, requestBody, httpServletRequest);
+       return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval escalated successfully", httpServletRequest.getRequestURI(), response));
     }
+
     @GetMapping("/approval/statistics")
-    public ResponseEntity<ApiResponse<ApprovalStatisticsResponse>> getApprovalStatistics(
-            HttpServletRequest httpServletRequest
-    ) {
-
-        ApprovalStatisticsResponse response =
-                documentApprovalService.getApprovalStatistics(
-                        httpServletRequest
-                );
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.OK.value(),
-                                "Approval statistics fetched successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+    public ResponseEntity<ApiResponse<ApprovalStatisticsResponse>> getApprovalStatistics(HttpServletRequest httpServletRequest) {
+        ApprovalStatisticsResponse response = documentApprovalService.getApprovalStatistics(httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval statistics fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @PostMapping("/{documentId}/assign-approval-workflow")
-    public ResponseEntity<ApiResponse<List<DocumentApprovalWorkflow>>> assignApprovalWorkflow(
-
-            @PathVariable String documentId,
-
-            @RequestBody ApprovalWorkflowRequest requestBody,
-
-            HttpServletRequest httpServletRequest
-    ) {
-
-        List<DocumentApprovalWorkflow> response =
-                documentApprovalService.assignApprovalWorkflow(
-                        documentId,
-                        requestBody,
-                        httpServletRequest
-                );
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.CREATED.value(),
-                                "Approval workflow assigned successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+    public ResponseEntity<ApiResponse<List<DocumentApprovalWorkflow>>> assignApprovalWorkflow(@PathVariable String documentId, @RequestBody ApprovalWorkflowRequest requestBody, HttpServletRequest httpServletRequest) {
+        List<DocumentApprovalWorkflow> response = documentApprovalService.assignApprovalWorkflow(documentId, requestBody, httpServletRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Approval workflow assigned successfully", httpServletRequest.getRequestURI(), response));
     }
 }

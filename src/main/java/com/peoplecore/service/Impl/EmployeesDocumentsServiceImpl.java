@@ -1049,6 +1049,38 @@ public class EmployeesDocumentsServiceImpl implements EmployeesDocumentsService 
                 .build();
     }
 
+    @Override
+    public DownloadDocumentResponse previewDocument(
+            String documentId,
+            HttpServletRequest request) {
+
+        EmployeeDocument document =
+                employeeDocumentRepository.findByDocumentId(documentId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Document not found"));
+
+        Resource resource;
+
+        try {
+            Path path = Paths.get(document.getFileUrl());
+
+            resource = new UrlResource(path.toUri());
+
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to preview file");
+        }
+
+        return DownloadDocumentResponse.builder()
+                .fileName(document.getFileName())
+                .contentType(document.getFileType())
+                .resource(resource)
+                .build();
+    }
+
     private void validateDocumentAccess(EmployeeDocument doc) {
 
         // Example future RBAC

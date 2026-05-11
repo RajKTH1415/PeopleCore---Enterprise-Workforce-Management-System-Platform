@@ -45,8 +45,7 @@ public class CertificationsManagementController {
             @RequestParam(required = false) String issuer,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "false") Boolean includeDeleted,
-            HttpServletRequest httpServletRequest
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         PageResponse<CertificationResponse> response =
                 certificationService.getAllCertifications(

@@ -246,4 +246,21 @@ public class EmployeeDocumentManagementController {
                         "attachment; filename=\"" + response.getFileName() + "\"")
                 .body(response.getResource());
     }
+
+    @GetMapping("/{documentId}/preview")
+    public ResponseEntity<Resource> previewDocument(
+            @PathVariable String documentId,
+            HttpServletRequest request) {
+
+        DownloadDocumentResponse response =
+                employeesDocumentsService.previewDocument(documentId, request);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(response.getContentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + response.getFileName() + "\""
+                )
+                .body(response.getResource());
+    }
 }

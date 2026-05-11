@@ -93,4 +93,9 @@ public interface EmployeesDocumentsService {
 
     DownloadDocumentResponse downloadDocument(String documentId,
                                               HttpServletRequest request);
+
+
+    DownloadDocumentResponse previewDocument(
+            String documentId,
+            HttpServletRequest request);
 }
