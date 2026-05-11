@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/skills")
-public class SkillsManagementController {
+public class SkillsController {
 
     private final SkillService skillService;
 
-    public SkillsManagementController(SkillService skillService) {
+    public SkillsController(SkillService skillService) {
         this.skillService = skillService;
     }
 

@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/certifications")
-public class CertificationsManagementController {
+public class CertificationsController {
 
     private final CertificationService certificationService;
 
-    public CertificationsManagementController(CertificationService certificationService){
+    public CertificationsController(CertificationService certificationService){
         this.certificationService = certificationService;
     }
 

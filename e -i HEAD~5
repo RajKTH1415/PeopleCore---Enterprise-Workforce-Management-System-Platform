@@ -1,0 +1,59 @@
+[33mf9f7243[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: implement document access log API
+[33ma9e400c[m feat: implement document audit logs API
+[33m673b9a7[m feat: add expired documents retrieval API
+[33mb322ce2[m feat: add expired documents retrieval API
+[33m3df0db6[m feat: add document preview and expiry tracking APIs
+[33mb8ef5d6[m feat: add multi-level approval workflow API
+[33m44644db[m updated getAverageApprovalTimeInHours in repository
+[33m84c1bf2[m feat: add approval statistics API
+[33m9902b93[m feat: add approval escalation API
+[33mabb9c66[m feat: add approval remarks update API
+[33m24f9134[m feat: add approval audit logs API and audit tracking support
+[33m2e53501[m feat: add bulk reject document approvals API
+[33mdfeae9b[m feat: add bulk approve document approvals API
+[33m8bb5904[m feat: add my pending approval actions API
+[33m44a7e16[m feat: add my requested approvals API
+[33mca8b119[m feat: add approval dashboard counts API
+[33maeb55fc[m feat: add filter approvals by status API
+[33ma8aa2ba[m feat: add cancel approval request API
+[33m2f0dee5[m feat: add get approval by id API
+[33m3c24aaf[m feat: implement paginated document approval history API
+[33m3eb2050[m feat: implement document approval history API
+[33mc7df1ec[m feat(document-approval): implement pending approvals API with pagination and sorting
+[33m0ce5aa7[m feat(document-verification): update document verification workflow APIs
+[33m0262fcb[m feat(document-approval): update approval workflow APIs
+[33md3bfed7[m feat(document-management): implement document verification and approval workflow APIs
+[33mef8485d[m feat(document-verification): implement document verification and rejection APIs
+[33m1660935[m feat(document-search): implement unified document search API
+[33m03e9b45[m feat(document-management): implement document download API with audit & access logging
+[33m3842658[m feat(employee-document-management): implement document replace API with version history and audit tracking
+[33m2882913[m added restoreVersion API
+[33m0523170[m restoreDocument API added
+[33m708ce7e[m updated softDeleteDocument API
+[33m9c0be13[m feat(document): add soft delete API for employee documents
+[33mda4c85d[m feat(document): add update document metadata API
+[33md590c65[m feat(document): add API to fetch document details by documentId
+[33m21b53fc[m feat(employee-documents): implement advanced document listing API with dynamic filtering and pagination
+[33m430421d[m Updated APIs:  upload , getAllDocuments
+[33m5959beb[m feat(document-service): implement advanced employee document search API with filtering and pagination
+[33m4bc2eb5[m feat(document): implement document details API with versions and audits
+[33me4d5249[m feat: implement document upload with versioning, audit logging, and diff tracking
+[33m1d85b7c[m updated EmployeesDocumentsServiceImpl
+[33m1f6f79d[m Updated code
+[33maaac8e5[m uploadDocument API added
+[33mf16dcbf[m added getEmployeeDashboard API
+[33m300dec3[m updated code
+[33mae94706[m updated getDownloadUrl API
+[33md9ca067[m feat: migrate certificate files to file storage
+[33mb4bb879[m updated config file
+[33mce318bb[m updated/(EM) employee entity
+[33m739467f[m feat(certification): add audit history and verification details APIs
+[33m9834167[m updated deleteCertificateFile API
+[33m28deeaf[m feat(certification): add replace certificate file API
+[33mfa45b4d[m feat(certification): add delete certificate file API
+[33ma59aa69[m feat(certification): add certificate preview API
+[33m2e519e2[m feat(EM Module)add certificate download API
+[33m2bea517[m feat/(EM-Module)added EmployeeCertificationFiles
+[33m8885f8a[m feat(Employee Management Module) added verifyCertification API
+[33m8caa658[m feat(employee-management:certifications): add renew API, expiry scheduler, and status calculation logic
+[33m2c89494[m User Management Module
