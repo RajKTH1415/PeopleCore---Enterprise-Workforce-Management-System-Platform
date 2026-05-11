@@ -1,9 +1,7 @@
 package com.peoplecore.controller;
-import com.peoplecore.dto.request.ApprovalEscalationRequest;
-import com.peoplecore.dto.request.ApprovalRemarksRequest;
-import com.peoplecore.dto.request.BulkApprovalRequest;
-import com.peoplecore.dto.request.BulkRejectRequest;
+import com.peoplecore.dto.request.*;
 import com.peoplecore.dto.response.*;
+import com.peoplecore.module.DocumentApprovalWorkflow;
 import com.peoplecore.service.DocumentApprovalService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -344,6 +342,34 @@ public class DocumentApprovalController {
                         ApiResponse.success(
                                 HttpStatus.OK.value(),
                                 "Approval statistics fetched successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+
+    @PostMapping("/{documentId}/assign-approval-workflow")
+    public ResponseEntity<ApiResponse<List<DocumentApprovalWorkflow>>> assignApprovalWorkflow(
+
+            @PathVariable String documentId,
+
+            @RequestBody ApprovalWorkflowRequest requestBody,
+
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalWorkflow> response =
+                documentApprovalService.assignApprovalWorkflow(
+                        documentId,
+                        requestBody,
+                        httpServletRequest
+                );
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.CREATED.value(),
+                                "Approval workflow assigned successfully",
                                 httpServletRequest.getRequestURI(),
                                 response
                         )

@@ -1,11 +1,9 @@
 package com.peoplecore.service;
 
 
-import com.peoplecore.dto.request.ApprovalEscalationRequest;
-import com.peoplecore.dto.request.ApprovalRemarksRequest;
-import com.peoplecore.dto.request.BulkApprovalRequest;
-import com.peoplecore.dto.request.BulkRejectRequest;
+import com.peoplecore.dto.request.*;
 import com.peoplecore.dto.response.*;
+import com.peoplecore.module.DocumentApprovalWorkflow;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -109,6 +107,12 @@ public interface DocumentApprovalService {
             HttpServletRequest httpServletRequest
     );
     ApprovalStatisticsResponse getApprovalStatistics(
+            HttpServletRequest httpServletRequest
+    );
+
+    List<DocumentApprovalWorkflow> assignApprovalWorkflow(
+            String documentId,
+            ApprovalWorkflowRequest request,
             HttpServletRequest httpServletRequest
     );
 }

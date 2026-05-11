@@ -1,14 +1,13 @@
 package com.peoplecore.service.Impl;
-import com.peoplecore.dto.request.ApprovalEscalationRequest;
-import com.peoplecore.dto.request.ApprovalRemarksRequest;
-import com.peoplecore.dto.request.BulkApprovalRequest;
-import com.peoplecore.dto.request.BulkRejectRequest;
+import com.peoplecore.dto.request.*;
 import com.peoplecore.dto.response.*;
 import com.peoplecore.module.ApprovalAuditLog;
 import com.peoplecore.module.DocumentApproval;
+import com.peoplecore.module.DocumentApprovalWorkflow;
 import com.peoplecore.module.EmployeeDocument;
 import com.peoplecore.repository.ApprovalAuditLogRepository;
 import com.peoplecore.repository.DocumentApprovalRepository;
+import com.peoplecore.repository.DocumentApprovalWorkflowRepository;
 import com.peoplecore.repository.EmployeeDocumentRepository;
 import com.peoplecore.service.DocumentApprovalService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +29,7 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
 
     private final DocumentApprovalRepository documentApprovalRepository;
     private final ApprovalAuditLogRepository approvalAuditLogRepository;
-
+    private final DocumentApprovalWorkflowRepository documentApprovalWorkflowRepository;
     private final EmployeeDocumentRepository employeeDocumentRepository;
 
     @Override
@@ -735,6 +734,59 @@ public class DocumentApprovalServiceImpl implements DocumentApprovalService {
                                 : 0
                 )
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public List<DocumentApprovalWorkflow> assignApprovalWorkflow(
+            String documentId,
+            ApprovalWorkflowRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<DocumentApprovalWorkflow> workflows =
+                request.getWorkflowLevels()
+                        .stream()
+                        .map(level ->
+                                DocumentApprovalWorkflow.builder()
+                                        .documentId(documentId)
+                                        .approvalLevel(
+                                                level.getApprovalLevel()
+                                        )
+                                        .approverId(
+                                                level.getApproverId()
+                                        )
+                                        .roleName(
+                                                level.getRoleName()
+                                        )
+                                        .workflowStatus(
+                                                level.getApprovalLevel() == 1
+                                                        ? "PENDING"
+                                                        : "WAITING"
+                                        )
+                                        .assignedAt(LocalDateTime.now())
+                                        .build()
+                        )
+                        .toList();
+
+        List<DocumentApprovalWorkflow> savedWorkflows =
+                documentApprovalWorkflowRepository.saveAll(workflows);
+
+        ApprovalAuditLog auditLog =
+                ApprovalAuditLog.builder()
+                        .documentId(documentId)
+                        .action("WORKFLOW_ASSIGNED")
+                        .newStatus("WORKFLOW_CREATED")
+                        .actionBy(1L)
+                        .actionAt(LocalDateTime.now())
+                        .remarks(
+                                "Multi-level approval workflow assigned"
+                        )
+                        .build();
+
+        approvalAuditLogRepository.save(auditLog);
+
+        return savedWorkflows;
     }
 
     private DocumentApprovalResponse mapToResponse(
