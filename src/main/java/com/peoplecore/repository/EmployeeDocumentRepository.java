@@ -1,12 +1,15 @@
 package com.peoplecore.repository;
 
 import com.peoplecore.module.EmployeeDocument;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocument, Long> , JpaSpecificationExecutor {
@@ -39,6 +42,19 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
 """)
     int softDelete(@Param("employeeId") Long employeeId,
                    @Param("documentId") String documentId);
+
+
+
+    Page<EmployeeDocument> findByExpiryDateBetweenAndIsDeletedFalse(
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    );
+
+    Page<EmployeeDocument> findByExpiryDateBeforeAndIsDeletedFalse(
+            LocalDate date,
+            Pageable pageable
+    );
 
 
 }

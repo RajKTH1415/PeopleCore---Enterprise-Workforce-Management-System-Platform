@@ -78,4 +78,73 @@ public class DocumentSearchController {
                 documentSearchService.searchDocuments(request);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Documents fetched successfully",httpServletRequest.getRequestURI(), response));
     }
+
+
+    @GetMapping("/expiring")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentResponse>>> getExpiringDocuments(
+
+            @RequestParam(defaultValue = "30") Integer days,
+
+            @RequestParam(defaultValue = "0") Integer page,
+
+            @RequestParam(defaultValue = "10") Integer size,
+
+            @RequestParam(defaultValue = "expiryDate") String sortBy,
+
+            @RequestParam(defaultValue = "ASC") String direction,
+
+            HttpServletRequest request) {
+
+        PageResponse<DocumentResponse> response =
+                documentSearchService.getExpiringDocuments(
+                        days,
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Expiring documents fetched successfully",
+                        request.getRequestURI(),
+                        response
+                ));
+    }
+
+    /*
+     * GET EXPIRED DOCUMENTS
+     * Example:
+     * GET /api/v1/documents/expired
+     */
+    @GetMapping("/expired")
+    public ResponseEntity<ApiResponse<PageResponse<DocumentResponse>>> getExpiredDocuments(
+
+            @RequestParam(defaultValue = "0") Integer page,
+
+            @RequestParam(defaultValue = "10") Integer size,
+
+            @RequestParam(defaultValue = "expiryDate") String sortBy,
+
+            @RequestParam(defaultValue = "DESC") String direction,
+
+            HttpServletRequest request) {
+
+        PageResponse<DocumentResponse> response =
+                documentSearchService.getExpiredDocuments(
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Expired documents fetched successfully",
+                        request.getRequestURI(),
+                        response
+                ));
+    }
 }

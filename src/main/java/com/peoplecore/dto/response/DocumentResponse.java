@@ -14,6 +14,7 @@ public class DocumentResponse {
     private String documentId;
     private Long employeeId;
     private String documentType;
+    private String documentNumber;
     private String category;
     private String title;
     private String fileUrl;
@@ -21,6 +22,8 @@ public class DocumentResponse {
     private Long fileSize;
     private Integer version;
     private LocalDate issueDate;
+
+    private Long verifiedBy;
     private Boolean isPrimary;
     private LocalDate expiryDate;
     private String status;
