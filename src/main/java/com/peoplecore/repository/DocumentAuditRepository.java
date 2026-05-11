@@ -1,6 +1,8 @@
 package com.peoplecore.repository;
 
 import com.peoplecore.module.EmployeeDocumentAudit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,4 +12,9 @@ public interface DocumentAuditRepository extends JpaRepository<EmployeeDocumentA
 
 
     List<EmployeeDocumentAudit> findByDocumentIdOrderByPerformedAtDesc(Long documentId);
+
+    Page<EmployeeDocumentAudit> findByDocumentId(
+            Long documentId,
+            Pageable pageable
+    );
 }
