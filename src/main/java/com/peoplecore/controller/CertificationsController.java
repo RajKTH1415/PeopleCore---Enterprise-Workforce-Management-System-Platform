@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/certifications")
 public class CertificationsController {
@@ -25,6 +27,13 @@ public class CertificationsController {
          CertificationResponse certificationResponse = certificationService.createCertification(certificationRequest);
          return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.OK.value(), "Certification created successfully", httpServletRequest.getRequestURI(), certificationResponse));
     }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<CertificationResponse>>> bulkCreateCertifications(@RequestBody List<CertificationRequest> requests, HttpServletRequest httpServletRequest) {
+        List<CertificationResponse> response = certificationService.bulkCreateCertifications(requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Certifications created successfully", httpServletRequest.getRequestURI(), response));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CertificationResponse>> getCertificationById(@PathVariable("id") Long Id , HttpServletRequest httpServletRequest){
         CertificationResponse certificationResponse = certificationService.getById(Id);

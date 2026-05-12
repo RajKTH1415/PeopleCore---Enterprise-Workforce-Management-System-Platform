@@ -25,13 +25,8 @@ public class DocumentVerificationServiceImpl implements DocumentVerificationServ
     }
 
     @Override
-    public DocumentResponse verifyDocument(
-            String documentId,
-            HttpServletRequest request
-    ) {
-
-        EmployeeDocument document =
-                employeeDocumentRepository.findByDocumentId(documentId)
+    public DocumentResponse verifyDocument(String documentId, HttpServletRequest request) {
+        EmployeeDocument document = employeeDocumentRepository.findByDocumentId(documentId)
                         .orElseThrow(() ->
                                 new RuntimeException("Document not found"));
 
@@ -44,16 +39,9 @@ public class DocumentVerificationServiceImpl implements DocumentVerificationServ
         document.setVerifiedAt(LocalDateTime.now());
         document.setUpdatedAt(LocalDateTime.now());
 
-        EmployeeDocument savedDocument =
-                employeeDocumentRepository.save(document);
+        EmployeeDocument savedDocument = employeeDocumentRepository.save(document);
 
-        saveAudit(
-                savedDocument,
-                "VERIFY_DOCUMENT",
-                oldStatus,
-                "VERIFIED",
-                request
-        );
+        saveAudit(savedDocument, "VERIFY_DOCUMENT", oldStatus, "VERIFIED", request);
 
         return mapToResponse(savedDocument);
     }

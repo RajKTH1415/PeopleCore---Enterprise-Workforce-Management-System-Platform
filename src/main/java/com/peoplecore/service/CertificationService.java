@@ -5,7 +5,12 @@ import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 
+import java.util.List;
+
 public interface CertificationService {
+    List<CertificationResponse> bulkCreateCertifications(
+            List<CertificationRequest> requests
+    );
 
     CertificationResponse createCertification(CertificationRequest request);
 

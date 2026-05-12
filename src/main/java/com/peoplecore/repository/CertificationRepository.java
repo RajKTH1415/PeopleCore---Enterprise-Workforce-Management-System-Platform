@@ -19,6 +19,11 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
     Optional<Certification> findById(Long certificateId);
 
+    boolean existsByNameIgnoreCaseAndIssuerIgnoreCase(
+            String name,
+            String issuer
+    );
+
 
     @Query("""
            SELECT c

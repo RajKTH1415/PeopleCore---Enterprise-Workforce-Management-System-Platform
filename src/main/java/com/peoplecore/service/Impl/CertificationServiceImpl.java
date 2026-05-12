@@ -4,6 +4,7 @@ import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
@@ -31,6 +32,52 @@ public class CertificationServiceImpl implements CertificationService {
         this.employeeCertificationsRepository = employeeCertificationsRepository;
     }
 
+    @Override
+    @Transactional
+    public List<CertificationResponse> bulkCreateCertifications(
+            List<CertificationRequest> requests
+    ) {
+
+        List<Certification> certifications = requests.stream()
+                .map(request -> {
+
+                    boolean exists = certificationRepository
+                            .existsByNameIgnoreCaseAndIssuerIgnoreCase(
+                                    request.getName(),
+                                    request.getIssuer()
+                            );
+
+                    if (exists) {
+                        throw new BadRequestException(
+                                "Certification already exists: "
+                                        + request.getName()
+                        );
+                    }
+
+                    return Certification.builder()
+                            .name(request.getName())
+                            .issuer(request.getIssuer())
+                            .status(CertificationStatus.ACTIVE)
+                            .isDeleted(false)
+                            .build();
+                })
+                .toList();
+
+        List<Certification> savedCertifications =
+                certificationRepository.saveAll(certifications);
+
+        return savedCertifications.stream()
+                .map(certification -> CertificationResponse.builder()
+                        .id(certification.getId())
+                        .name(certification.getName())
+                        .issuer(certification.getIssuer())
+                        .status(certification.getStatus())
+                        .isDeleted(certification.isDeleted())
+                        .createdDate(certification.getCreatedDate())
+                        .createdBy(certification.getCreatedBy())
+                        .build())
+                .toList();
+    }
 
     @Override
     public CertificationResponse createCertification(CertificationRequest request) {
