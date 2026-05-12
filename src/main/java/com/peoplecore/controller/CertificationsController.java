@@ -63,4 +63,10 @@ public class CertificationsController {
         CertificationResponse response = certificationService.restoreCertification(id);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification restored successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<ApiResponse<Void>> permanentlyDeleteCertification(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        certificationService.permanentlyDeleteCertification(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification permanently deleted successfully", httpServletRequest.getRequestURI(), null ));
+    }
 }

@@ -26,5 +26,7 @@ public interface CertificationService {
     CertificationResponse updateCertification(Long id, CertificationRequest request);
 
     CertificationResponse restoreCertification(Long id);
+
+    void permanentlyDeleteCertification(Long id);
 }
 

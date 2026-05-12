@@ -3,8 +3,11 @@ package com.peoplecore.service.Impl;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.exception.BadRequestException;
+import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
 import com.peoplecore.repository.CertificationRepository;
+import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.service.CertificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +23,11 @@ import java.util.List;
 public class CertificationServiceImpl implements CertificationService {
 
     private final CertificationRepository certificationRepository;
+    private final EmployeeCertificationsRepository employeeCertificationsRepository;
 
-    public CertificationServiceImpl(CertificationRepository certificationRepository) {
+    public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository) {
         this.certificationRepository = certificationRepository;
+        this.employeeCertificationsRepository = employeeCertificationsRepository;
     }
 
 
@@ -240,5 +245,26 @@ public class CertificationServiceImpl implements CertificationService {
                 .updatedDate(savedCertification.getUpdatedDate())
                 .updatedBy(savedCertification.getUpdatedBy())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void permanentlyDeleteCertification(Long id) {
+
+        Certification certification = certificationRepository
+                .findCertificationIncludingDeleted(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Certification not found with id: " + id
+                        ));
+        if (!certification.isDeleted()) {
+            throw new BadRequestException(
+                    "Only soft deleted certifications can be permanently deleted"
+            );
+        }
+        employeeCertificationsRepository
+                .deleteByCertificationId(id);
+
+        certificationRepository.delete(certification);
     }
 }

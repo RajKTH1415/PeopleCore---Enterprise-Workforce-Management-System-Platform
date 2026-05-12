@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface EmployeeCertificationsRepository extends JpaRepository<EmployeeCertification, Long> {
 
+    void deleteByCertificationId(Long certificationId);
 
     Optional<EmployeeCertification> findById(Long aLong);
 
