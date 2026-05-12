@@ -1,6 +1,7 @@
 package com.peoplecore.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.peoplecore.enums.CertificationStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,8 @@ public class CertificationResponse {
     private String issuer;
 
     private Boolean deleted;
+
+    private CertificationStatus status;
 
 
     private LocalDateTime createdDate;

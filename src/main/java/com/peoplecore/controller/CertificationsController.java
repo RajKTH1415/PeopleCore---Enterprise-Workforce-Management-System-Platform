@@ -1,5 +1,6 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.CertificationService;
@@ -68,5 +69,15 @@ public class CertificationsController {
     public ResponseEntity<ApiResponse<Void>> permanentlyDeleteCertification(@PathVariable Long id, HttpServletRequest httpServletRequest) {
         certificationService.permanentlyDeleteCertification(id);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification permanently deleted successfully", httpServletRequest.getRequestURI(), null ));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<CertificationResponse>> updateCertificationStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateCertificationStatusRequest request,
+            HttpServletRequest httpRequest) {
+
+        CertificationResponse response = certificationService.updateCertificationStatus(id, request);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification status updated successfully", httpRequest.getRequestURI(), response));
     }
 }

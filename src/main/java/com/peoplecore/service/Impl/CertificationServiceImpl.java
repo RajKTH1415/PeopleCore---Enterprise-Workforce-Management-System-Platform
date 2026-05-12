@@ -1,6 +1,7 @@
 package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.exception.BadRequestException;
@@ -266,5 +267,37 @@ public class CertificationServiceImpl implements CertificationService {
                 .deleteByCertificationId(id);
 
         certificationRepository.delete(certification);
+    }
+
+    @Override
+    @Transactional
+    public CertificationResponse updateCertificationStatus(
+            Long id,
+            UpdateCertificationStatusRequest request
+    ) {
+
+        Certification certification = certificationRepository
+                .findCertificationIncludingDeleted(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Certification not found with id: " + id
+                        ));
+
+        certification.setStatus(request.getStatus());
+
+        Certification savedCertification =
+                certificationRepository.save(certification);
+
+        return CertificationResponse.builder()
+                .id(savedCertification.getId())
+                .name(savedCertification.getName())
+                .issuer(savedCertification.getIssuer())
+                .status(savedCertification.getStatus())
+                .isDeleted(savedCertification.isDeleted())
+                .createdDate(savedCertification.getCreatedDate())
+                .createdBy(savedCertification.getCreatedBy())
+                .updatedDate(savedCertification.getUpdatedDate())
+                .updatedBy(savedCertification.getUpdatedBy())
+                .build();
     }
 }

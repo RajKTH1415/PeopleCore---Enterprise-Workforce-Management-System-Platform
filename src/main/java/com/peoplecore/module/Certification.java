@@ -1,5 +1,6 @@
 package com.peoplecore.module;
 
+import com.peoplecore.enums.CertificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,12 @@ public class Certification extends Auditable implements Serializable {
     @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private CertificationStatus status = CertificationStatus.ACTIVE;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

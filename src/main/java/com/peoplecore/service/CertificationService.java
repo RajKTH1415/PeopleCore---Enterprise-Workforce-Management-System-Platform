@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 
@@ -28,5 +29,10 @@ public interface CertificationService {
     CertificationResponse restoreCertification(Long id);
 
     void permanentlyDeleteCertification(Long id);
+
+    CertificationResponse updateCertificationStatus(
+            Long id,
+            UpdateCertificationStatusRequest request
+    );
 }
 
