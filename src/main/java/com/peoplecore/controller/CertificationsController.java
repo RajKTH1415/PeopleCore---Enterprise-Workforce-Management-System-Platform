@@ -1,8 +1,10 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationSkillResponse;
 import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.CertificationService;
@@ -106,5 +108,11 @@ public class CertificationsController {
     public ResponseEntity<ApiResponse<CertificationUsageAnalyticsResponse>> getCertificationUsageAnalytics(HttpServletRequest httpServletRequest) {
         CertificationUsageAnalyticsResponse response = certificationService.getCertificationUsageAnalytics();
       return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification usage analytics fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+
+    @PostMapping("/{certificationId}/skills")
+    public ResponseEntity<ApiResponse<CertificationSkillResponse>> addSkills(@PathVariable("certificationId") Long id, @RequestBody CertificationSkillRequest request, HttpServletRequest httpServletRequest) {
+        CertificationSkillResponse response = certificationService.addSkills(id, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Skills mapped to certification successfully", httpServletRequest.getRequestURI(), response));
     }
 }

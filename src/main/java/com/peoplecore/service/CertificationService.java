@@ -2,8 +2,10 @@ package com.peoplecore.service;
 
 import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationSkillResponse;
 import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 
@@ -47,5 +49,7 @@ public interface CertificationService {
     );
 
     CertificationUsageAnalyticsResponse getCertificationUsageAnalytics();
+
+    CertificationSkillResponse addSkills(Long id, CertificationSkillRequest request);
 }
 

@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -31,6 +33,13 @@ public class Certification extends Auditable implements Serializable {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "certification_skills",
+            joinColumns = @JoinColumn(name = "certification_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    private Set<Skill> skills = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

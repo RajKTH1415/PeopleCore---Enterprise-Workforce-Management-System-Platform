@@ -2,16 +2,20 @@ package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
+import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationSkillResponse;
 import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
+import com.peoplecore.module.Skill;
 import com.peoplecore.repository.CertificationRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
+import com.peoplecore.repository.SkillRepository;
 import com.peoplecore.service.CertificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,16 +27,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CertificationServiceImpl implements CertificationService {
 
     private final CertificationRepository certificationRepository;
     private final EmployeeCertificationsRepository employeeCertificationsRepository;
+    private final SkillRepository skillRepository;
 
-    public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository) {
+    public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository, SkillRepository skillRepository) {
         this.certificationRepository = certificationRepository;
         this.employeeCertificationsRepository = employeeCertificationsRepository;
+        this.skillRepository = skillRepository;
     }
 
     @Override
@@ -433,6 +441,35 @@ public class CertificationServiceImpl implements CertificationService {
                 .deprecatedCount(deprecated)
                 .mostPopularIssuer(topIssuer)
                 .mostAssignedCertification(topCertification)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public CertificationSkillResponse addSkills(Long id, CertificationSkillRequest request) {
+
+        Certification certification = certificationRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Certification not found: " + id)
+                );
+
+        Set<Skill> skills = request.getSkillIds().stream()
+                .map(skillId -> skillRepository.findById(skillId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Skill not found: " + skillId)))
+                .collect(Collectors.toSet());
+
+        certification.getSkills().addAll(skills);
+
+        Certification saved = certificationRepository.save(certification);
+
+        return CertificationSkillResponse.builder()
+                .certificationId(saved.getId())
+                .certificationName(saved.getName())
+                .skills(saved.getSkills().stream()
+                        .map(Skill::getName)
+                        .collect(Collectors.toSet()))
                 .build();
     }
 }
