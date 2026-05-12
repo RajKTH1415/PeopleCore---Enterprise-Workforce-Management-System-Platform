@@ -38,6 +38,15 @@ public interface EmployeeCertificationsRepository extends JpaRepository<Employee
             Pageable pageable
     );
 
+    @Query("""
+    SELECT c.name, COUNT(ec)
+    FROM EmployeeCertification ec
+    JOIN ec.certification c
+    GROUP BY c.name
+    ORDER BY COUNT(ec) DESC
+""")
+    List<Object[]> findMostAssignedCertification();
+
 
 
     Optional<EmployeeCertification> findByEmployeeIdAndCertificationIdAndIsDeletedFalse(

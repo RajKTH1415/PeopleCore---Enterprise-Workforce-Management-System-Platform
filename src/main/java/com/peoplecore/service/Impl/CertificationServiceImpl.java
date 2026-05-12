@@ -4,6 +4,7 @@ import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.exception.BadRequestException;
@@ -390,6 +391,48 @@ public class CertificationServiceImpl implements CertificationService {
                 .createdBy(savedCertification.getCreatedBy())
                 .updatedDate(savedCertification.getUpdatedDate())
                 .updatedBy(savedCertification.getUpdatedBy())
+                .build();
+    }
+
+    @Override
+    public CertificationUsageAnalyticsResponse getCertificationUsageAnalytics() {
+
+        long total = certificationRepository.count();
+
+        List<Object[]> statusCounts = certificationRepository.countByStatus();
+
+        long active = 0, inactive = 0, deprecated = 0;
+
+        for (Object[] row : statusCounts) {
+            String status = row[0].toString();
+            Long count = (Long) row[1];
+
+            switch (status) {
+                case "ACTIVE" -> active = count;
+                case "INACTIVE" -> inactive = count;
+                case "DEPRECATED" -> deprecated = count;
+            }
+        }
+
+        List<Object[]> issuers = certificationRepository.findTopIssuers();
+        String topIssuer = issuers.isEmpty()
+                ? null
+                : issuers.get(0)[0].toString();
+
+        List<Object[]> mostAssigned =
+                employeeCertificationsRepository.findMostAssignedCertification();
+
+        String topCertification = mostAssigned.isEmpty()
+                ? null
+                : mostAssigned.get(0)[0].toString();
+
+        return CertificationUsageAnalyticsResponse.builder()
+                .totalCertifications(total)
+                .activeCount(active)
+                .inactiveCount(inactive)
+                .deprecatedCount(deprecated)
+                .mostPopularIssuer(topIssuer)
+                .mostAssignedCertification(topCertification)
                 .build();
     }
 }

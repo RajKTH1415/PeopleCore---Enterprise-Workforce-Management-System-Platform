@@ -19,6 +19,21 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
     Optional<Certification> findById(Long certificateId);
 
+    @Query("""
+    SELECT c.issuer, COUNT(c)
+    FROM Certification c
+    GROUP BY c.issuer
+    ORDER BY COUNT(c) DESC
+""")
+    List<Object[]> findTopIssuers();
+
+    @Query("""
+    SELECT c.status, COUNT(c)
+    FROM Certification c
+    GROUP BY c.status
+""")
+    List<Object[]> countByStatus();
+
     boolean existsByNameIgnoreCaseAndIssuerIgnoreCase(
             String name,
             String issuer

@@ -3,6 +3,7 @@ import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.CertificationService;
 import com.peoplecore.util.ApiResponse;
@@ -99,5 +100,11 @@ public class CertificationsController {
 
         CertificationResponse response = certificationService.updateCertificationStatus(id, request);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification status updated successfully", httpRequest.getRequestURI(), response));
+    }
+
+    @GetMapping("/analytics/usage")
+    public ResponseEntity<ApiResponse<CertificationUsageAnalyticsResponse>> getCertificationUsageAnalytics(HttpServletRequest httpServletRequest) {
+        CertificationUsageAnalyticsResponse response = certificationService.getCertificationUsageAnalytics();
+      return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification usage analytics fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 }

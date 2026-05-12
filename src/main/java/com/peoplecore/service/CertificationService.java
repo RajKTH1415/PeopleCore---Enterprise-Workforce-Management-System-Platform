@@ -4,6 +4,7 @@ import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
+import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
 import com.peoplecore.dto.response.PageResponse;
 
 import java.util.List;
@@ -44,5 +45,7 @@ public interface CertificationService {
             Long id,
             UpdateCertificationStatusRequest request
     );
+
+    CertificationUsageAnalyticsResponse getCertificationUsageAnalytics();
 }
 
