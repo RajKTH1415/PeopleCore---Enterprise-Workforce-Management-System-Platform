@@ -1,4 +1,5 @@
 package com.peoplecore.controller;
+import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
@@ -68,6 +69,16 @@ public class CertificationsController {
         CertificationResponse certificationResponse = certificationService.updateCertification(id, certificationRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification updated successfully", httpServletRequest.getRequestURI(), certificationResponse));
     }
+
+    @PutMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<CertificationResponse>>> bulkUpdateCertifications(@RequestBody
+            List<BulkUpdateCertificationRequest> requests,
+            HttpServletRequest httpServletRequest) {
+
+        List<CertificationResponse> response = certificationService.bulkUpdateCertifications(requests);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certifications updated successfully", httpServletRequest.getRequestURI(), response));
+    }
+
     @PutMapping("/{id}/restore")
     public ResponseEntity<ApiResponse<CertificationResponse>> restoreCertification(@PathVariable Long id, HttpServletRequest httpServletRequest) {
         CertificationResponse response = certificationService.restoreCertification(id);

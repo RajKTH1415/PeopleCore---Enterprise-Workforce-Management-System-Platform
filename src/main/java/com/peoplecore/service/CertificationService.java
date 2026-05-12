@@ -1,5 +1,6 @@
 package com.peoplecore.service;
 
+import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
@@ -30,6 +31,10 @@ public interface CertificationService {
 
 
     CertificationResponse updateCertification(Long id, CertificationRequest request);
+
+    List<CertificationResponse> bulkUpdateCertifications(
+            List<BulkUpdateCertificationRequest> requests
+    );
 
     CertificationResponse restoreCertification(Long id);
 

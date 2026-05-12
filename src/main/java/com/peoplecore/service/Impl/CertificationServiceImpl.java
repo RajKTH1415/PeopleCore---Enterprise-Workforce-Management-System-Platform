@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 
+import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.CertificationResponse;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,8 +37,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     @Transactional
     public List<CertificationResponse> bulkCreateCertifications(
-            List<CertificationRequest> requests
-    ) {
+            List<CertificationRequest> requests) {
 
         List<Certification> certifications = requests.stream()
                 .map(request -> {
@@ -259,6 +260,50 @@ public class CertificationServiceImpl implements CertificationService {
 
     }
 
+    @Override
+    @Transactional
+    public List<CertificationResponse> bulkUpdateCertifications(
+            List<BulkUpdateCertificationRequest> requests) {
+
+        List<CertificationResponse> responses = new ArrayList<>();
+
+        for (BulkUpdateCertificationRequest request : requests) {
+
+            Certification certification = certificationRepository
+                    .findCertificationIncludingDeleted(request.getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Certification not found with id: "
+                                            + request.getId()
+                            ));
+
+            certification.setName(request.getName());
+            certification.setIssuer(request.getIssuer());
+
+            if (request.getStatus() != null) {
+                certification.setStatus(request.getStatus());
+            }
+
+            Certification savedCertification =
+                    certificationRepository.save(certification);
+
+            responses.add(
+                    CertificationResponse.builder()
+                            .id(savedCertification.getId())
+                            .name(savedCertification.getName())
+                            .issuer(savedCertification.getIssuer())
+                            .status(savedCertification.getStatus())
+                            .isDeleted(savedCertification.isDeleted())
+                            .createdDate(savedCertification.getCreatedDate())
+                            .createdBy(savedCertification.getCreatedBy())
+                            .updatedDate(savedCertification.getUpdatedDate())
+                            .updatedBy(savedCertification.getUpdatedBy())
+                            .build()
+            );
+        }
+
+        return responses;
+    }
     @Override
     @Transactional
     public CertificationResponse restoreCertification(Long id) {
