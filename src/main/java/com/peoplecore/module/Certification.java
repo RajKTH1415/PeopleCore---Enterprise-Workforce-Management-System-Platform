@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -25,6 +26,13 @@ public class Certification extends Auditable implements Serializable {
     @Column(nullable = false)
     private String issuer;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private String deletedBy;
 }

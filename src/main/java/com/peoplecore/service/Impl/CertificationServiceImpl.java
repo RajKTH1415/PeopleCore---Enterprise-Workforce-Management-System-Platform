@@ -54,13 +54,13 @@ public class CertificationServiceImpl implements CertificationService {
      Certification certification =   certificationRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Certificate not found with ID :"+ id));
 
-        if (Boolean.TRUE.equals(certification.getIsDeleted())) {
+        if (Boolean.TRUE.equals(certification.isDeleted())) {
             throw new RuntimeException("Certificate not found with ID: " + id);
         }
         return CertificationResponse.builder()
                 .name(certification.getName())
                 .issuer(certification.getIssuer())
-                .deleted(certification.getIsDeleted())
+                .deleted(certification.isDeleted())
                 .createdBy(certification.getCreatedBy())
                 .createdDate(certification.getCreatedDate())
                 .updatedDate(certification.getUpdatedDate())
@@ -73,22 +73,24 @@ public class CertificationServiceImpl implements CertificationService {
         Certification certification = certificationRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Certificate not  found with ID :"+ id));
 
-        if (Boolean.TRUE.equals(certification.getIsDeleted())){
+        if (Boolean.TRUE.equals(certification.isDeleted())){
             throw new RuntimeException("certificate already deleted with ID:"+ id);
         }
-        certification.setIsDeleted(true);
+        certification.setDeleted(true);
 
         certification.setCreatedDate(LocalDateTime.now());
         certification.setCreatedBy("SYSTEM");
         certification.setUpdatedBy("SYSTEM");
         certification.setUpdatedDate(LocalDateTime.now());
+        certification.setDeletedAt(LocalDateTime.now());
+        certification.setDeletedBy("SYSTEM");
 
         Certification savedCertificate = certificationRepository.save(certification);
 
         return CertificationResponse.builder()
                 .name(savedCertificate.getName())
                 .issuer(savedCertificate.getIssuer())
-                .deleted(savedCertificate.getIsDeleted())
+                .deleted(savedCertificate.isDeleted())
                 .build();
     }
 
@@ -139,7 +141,7 @@ public class CertificationServiceImpl implements CertificationService {
                         .id(cert.getId())
                         .name(cert.getName())
                         .issuer(cert.getIssuer())
-                        .deleted(cert.getIsDeleted())
+                        .deleted(cert.isDeleted())
                         .createdDate(cert.getCreatedDate())
                         .createdBy(cert.getCreatedBy())
                         .updatedDate(cert.getUpdatedDate())
@@ -170,7 +172,7 @@ public class CertificationServiceImpl implements CertificationService {
       Certification certification =   certificationRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Certificate not found with ID :"+ id));
 
-      if (Boolean.TRUE.equals(certification.getIsDeleted())){
+      if (Boolean.TRUE.equals(certification.isDeleted())){
           throw new RuntimeException("Cannot update a deleted certification");
       }
 
@@ -195,12 +197,48 @@ public class CertificationServiceImpl implements CertificationService {
         return CertificationResponse.builder()
                 .name(savedCertificate.getName())
                 .issuer(savedCertificate.getIssuer())
-                .deleted(savedCertificate.getIsDeleted())
+                .deleted(savedCertificate.isDeleted())
                 .createdBy(savedCertificate.getCreatedBy())
                 .createdDate(savedCertificate.getCreatedDate())
                 .updatedBy(savedCertificate.getUpdatedBy())
                 .updatedDate(savedCertificate.getUpdatedDate())
                 .build();
 
+    }
+
+    @Override
+    @Transactional
+    public CertificationResponse restoreCertification(Long id) {
+
+        Certification certification = certificationRepository
+                .findCertificationIncludingDeleted(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Certification not found with id: " + id
+                        ));
+
+        if (!certification.isDeleted()) {
+            throw new RuntimeException(
+                    "Certification is not deleted"
+            );
+        }
+
+        certification.setDeleted(false);
+        certification.setDeletedAt(null);
+        certification.setDeletedBy(null);
+
+        Certification savedCertification =
+                certificationRepository.save(certification);
+
+        return CertificationResponse.builder()
+                .id(savedCertification.getId())
+                .name(savedCertification.getName())
+                .issuer(savedCertification.getIssuer())
+                .isDeleted(savedCertification.isDeleted())
+                .createdDate(savedCertification.getCreatedDate())
+                .createdBy(savedCertification.getCreatedBy())
+                .updatedDate(savedCertification.getUpdatedDate())
+                .updatedBy(savedCertification.getUpdatedBy())
+                .build();
     }
 }

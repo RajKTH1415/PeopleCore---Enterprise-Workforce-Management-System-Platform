@@ -58,4 +58,9 @@ public class CertificationsController {
         CertificationResponse certificationResponse = certificationService.updateCertification(id, certificationRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification updated successfully", httpServletRequest.getRequestURI(), certificationResponse));
     }
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<CertificationResponse>> restoreCertification(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        CertificationResponse response = certificationService.restoreCertification(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification restored successfully", httpServletRequest.getRequestURI(), response));
+    }
 }

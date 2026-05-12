@@ -22,6 +22,7 @@ public class CertificationResponse {
 
     private LocalDateTime createdDate;
     private String createdBy;
+    private Boolean isDeleted;
 
     private LocalDateTime updatedDate;
     private String updatedBy;

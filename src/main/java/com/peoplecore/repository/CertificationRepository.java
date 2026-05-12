@@ -19,6 +19,15 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
     Optional<Certification> findById(Long certificateId);
 
+    @Query("""
+           SELECT c
+           FROM Certification c
+           WHERE c.id = :id
+           """)
+    Optional<Certification> findCertificationIncludingDeleted(
+            @Param("id") Long id
+    );
+
     Optional<Certification> findByIdAndIsDeletedFalse(Long id);
 
     boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
