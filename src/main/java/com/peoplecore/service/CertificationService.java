@@ -51,5 +51,7 @@ public interface CertificationService {
     CertificationUsageAnalyticsResponse getCertificationUsageAnalytics();
 
     CertificationSkillResponse addSkills(Long id, CertificationSkillRequest request);
+
+    CertificationSkillResponse getSkills(Long id);
 }
 

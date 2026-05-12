@@ -115,4 +115,10 @@ public class CertificationsController {
         CertificationSkillResponse response = certificationService.addSkills(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Skills mapped to certification successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @GetMapping("/{certificationId}/skills")
+    public ResponseEntity<ApiResponse<CertificationSkillResponse>> getSkills(@PathVariable("certificationId") Long id, HttpServletRequest httpServletRequest) {
+        CertificationSkillResponse response = certificationService.getSkills(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification skills fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
 }

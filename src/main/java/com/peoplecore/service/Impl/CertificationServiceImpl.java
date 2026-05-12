@@ -472,4 +472,22 @@ public class CertificationServiceImpl implements CertificationService {
                         .collect(Collectors.toSet()))
                 .build();
     }
+
+    @Override
+    public CertificationSkillResponse getSkills(Long id) {
+
+        Certification certification = certificationRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Certification not found: " + id)
+                );
+
+        return CertificationSkillResponse.builder()
+                .certificationId(certification.getId())
+                .certificationName(certification.getName())
+                .skills(certification.getSkills().stream()
+                        .map(Skill::getName)
+                        .collect(Collectors.toSet()))
+                .build();
+    }
 }
