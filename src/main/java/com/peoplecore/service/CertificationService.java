@@ -16,6 +16,8 @@ public interface CertificationService {
             List<CertificationRequest> requests
     );
 
+    List<String> getSuggestions(String query);
+
     CertificationResponse createCertification(CertificationRequest request);
 
     CertificationResponse getById(Long id);

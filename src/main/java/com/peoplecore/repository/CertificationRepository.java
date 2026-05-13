@@ -17,6 +17,13 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
     Optional<Certification> findByNameAndIssuerAndIsDeletedFalse(String name, String issuer);
 
+    @Query("""
+           SELECT DISTINCT c.name
+           FROM Certification c
+           WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
+           ORDER BY c.name ASC
+           """)
+    List<String> searchSuggestions(@Param("query") String query);
     Optional<Certification> findById(Long certificateId);
 
     @Query("""

@@ -89,6 +89,17 @@ public class CertificationServiceImpl implements CertificationService {
                 .toList();
     }
 
+
+    @Override
+    public List<String> getSuggestions(String query) {
+
+        if (query == null || query.trim().length() < 2) {
+            throw new BadRequestException("Minimum 2 characters required");
+        }
+
+        return certificationRepository.searchSuggestions(query.trim());
+    }
+
     @Override
     public CertificationResponse createCertification(CertificationRequest request) {
 

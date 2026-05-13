@@ -121,4 +121,10 @@ public class CertificationsController {
         CertificationSkillResponse response = certificationService.getSkills(id);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification skills fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+    @GetMapping("/suggestions")
+    public ResponseEntity<ApiResponse<List<String>>> getSuggestions(@RequestParam String query, HttpServletRequest httpServletRequest) {
+
+        List<String> suggestions = certificationService.getSuggestions(query);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Suggestions fetched successfully", httpServletRequest.getRequestURI(), suggestions));
+    }
 }
