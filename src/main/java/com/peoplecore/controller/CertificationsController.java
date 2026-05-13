@@ -1,12 +1,7 @@
 package com.peoplecore.controller;
-import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
-import com.peoplecore.dto.request.CertificationRequest;
-import com.peoplecore.dto.request.CertificationSkillRequest;
-import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
-import com.peoplecore.dto.response.CertificationResponse;
-import com.peoplecore.dto.response.CertificationSkillResponse;
-import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.request.*;
+import com.peoplecore.dto.response.*;
+import com.peoplecore.service.CertificationIssuerService;
 import com.peoplecore.service.CertificationService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +16,11 @@ import java.util.List;
 public class CertificationsController {
 
     private final CertificationService certificationService;
+    private final CertificationIssuerService certificationIssuerService;
 
-    public CertificationsController(CertificationService certificationService){
+    public CertificationsController(CertificationService certificationService, CertificationIssuerService certificationIssuerService){
         this.certificationService = certificationService;
+        this.certificationIssuerService = certificationIssuerService;
     }
 
     @PostMapping
@@ -126,5 +123,45 @@ public class CertificationsController {
 
         List<String> suggestions = certificationService.getSuggestions(query);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Suggestions fetched successfully", httpServletRequest.getRequestURI(), suggestions));
+    }
+
+    @GetMapping("/issuers")
+    public ResponseEntity<ApiResponse<List<CertificationIssuerResponse>>>
+    getAllIssuers(
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<CertificationIssuerResponse> response =
+                certificationIssuerService.getAllIssuers();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Certification issuers fetched successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
+    @PostMapping("/issuers")
+    public ResponseEntity<ApiResponse<CertificationIssuerResponse>>
+    createIssuer(
+            @RequestBody CertificationIssuerRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        CertificationIssuerResponse response =
+                certificationIssuerService.createIssuer(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.CREATED.value(),
+                                "Certification issuer created successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
     }
 }
