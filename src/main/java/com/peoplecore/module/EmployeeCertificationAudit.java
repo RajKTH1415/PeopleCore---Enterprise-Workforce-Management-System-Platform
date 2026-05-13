@@ -1,10 +1,7 @@
 package com.peoplecore.module;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,6 +11,8 @@ import java.time.LocalDateTime;
 @Data
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "employee_certification_audit")
 public class EmployeeCertificationAudit {

@@ -4,10 +4,7 @@ import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
-import com.peoplecore.dto.response.CertificationResponse;
-import com.peoplecore.dto.response.CertificationSkillResponse;
-import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 
 import java.util.List;
 
@@ -15,6 +12,8 @@ public interface CertificationService {
     List<CertificationResponse> bulkCreateCertifications(
             List<CertificationRequest> requests
     );
+
+    List<CertificationAuditResponse> getCertificationAudit(Long certificationId);
 
     List<String> getSuggestions(String query);
 

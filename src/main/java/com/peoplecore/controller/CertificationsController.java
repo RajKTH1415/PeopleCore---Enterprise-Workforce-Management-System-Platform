@@ -164,4 +164,25 @@ public class CertificationsController {
                         )
                 );
     }
+
+    @GetMapping("/{id}/audit")
+    public ResponseEntity<ApiResponse<List<CertificationAuditResponse>>>
+    getCertificationAudit(
+            @PathVariable("id") Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        List<CertificationAuditResponse> response =
+                certificationService.getCertificationAudit(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ApiResponse.success(
+                                HttpStatus.OK.value(),
+                                "Certification audit logs fetched successfully",
+                                httpServletRequest.getRequestURI(),
+                                response
+                        )
+                );
+    }
 }

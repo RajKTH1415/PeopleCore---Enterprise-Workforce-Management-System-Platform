@@ -12,4 +12,7 @@ public interface EmployeeCertificationAuditRepository
     findByEmployeeIdAndCertificationIdOrderByPerformedAtDesc(
             Long employeeId,
             Long certificationId);
+
+    List<EmployeeCertificationAudit>
+    findByCertificationIdOrderByPerformedAtDesc(Long certificationId);
 }

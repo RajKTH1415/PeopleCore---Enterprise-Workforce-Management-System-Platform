@@ -4,16 +4,14 @@ import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
-import com.peoplecore.dto.response.CertificationResponse;
-import com.peoplecore.dto.response.CertificationSkillResponse;
-import com.peoplecore.dto.response.CertificationUsageAnalyticsResponse;
-import com.peoplecore.dto.response.PageResponse;
+import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
 import com.peoplecore.module.Skill;
 import com.peoplecore.repository.CertificationRepository;
+import com.peoplecore.repository.EmployeeCertificationAuditRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.repository.SkillRepository;
 import com.peoplecore.service.CertificationService;
@@ -36,11 +34,13 @@ public class CertificationServiceImpl implements CertificationService {
     private final CertificationRepository certificationRepository;
     private final EmployeeCertificationsRepository employeeCertificationsRepository;
     private final SkillRepository skillRepository;
+    private final EmployeeCertificationAuditRepository employeeCertificationAuditRepository;
 
-    public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository, SkillRepository skillRepository) {
+    public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository, SkillRepository skillRepository, EmployeeCertificationAuditRepository employeeCertificationAuditRepository) {
         this.certificationRepository = certificationRepository;
         this.employeeCertificationsRepository = employeeCertificationsRepository;
         this.skillRepository = skillRepository;
+        this.employeeCertificationAuditRepository = employeeCertificationAuditRepository;
     }
 
     @Override
@@ -85,6 +85,34 @@ public class CertificationServiceImpl implements CertificationService {
                         .isDeleted(certification.isDeleted())
                         .createdDate(certification.getCreatedDate())
                         .createdBy(certification.getCreatedBy())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<CertificationAuditResponse>
+    getCertificationAudit(Long certificationId) {
+
+        certificationRepository.findById(certificationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Certification not found"
+                        ));
+
+        return employeeCertificationAuditRepository
+                .findByCertificationIdOrderByPerformedAtDesc(certificationId)
+                .stream()
+                .map(audit -> CertificationAuditResponse.builder()
+                        .id(audit.getId())
+                        .employeeId(audit.getEmployeeId())
+                        .certificationId(audit.getCertificationId())
+                        .action(audit.getAction())
+                        .fileName(audit.getFileName())
+                        .fileType(audit.getFileType())
+                        .performedBy(audit.getPerformedBy())
+                        .performedAt(audit.getPerformedAt())
+                        .remarks(audit.getRemarks())
+                        .fileUrl(audit.getFileUrl())
                         .build())
                 .toList();
     }
