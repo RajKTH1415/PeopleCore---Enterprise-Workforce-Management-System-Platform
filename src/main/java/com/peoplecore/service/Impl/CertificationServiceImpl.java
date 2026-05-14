@@ -21,6 +21,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
@@ -52,6 +53,10 @@ public class CertificationServiceImpl implements CertificationService {
     private final EmployeeCertificationsRepository employeeCertificationsRepository;
     private final SkillRepository skillRepository;
     private final EmployeeCertificationAuditRepository employeeCertificationAuditRepository;
+
+    @Value("${app.file.export-dir}")
+    private String exportDir;
+
 
     public CertificationServiceImpl(CertificationRepository certificationRepository, EmployeeCertificationsRepository employeeCertificationsRepository, SkillRepository skillRepository, EmployeeCertificationAuditRepository employeeCertificationAuditRepository) {
         this.certificationRepository = certificationRepository;
@@ -151,15 +156,20 @@ public class CertificationServiceImpl implements CertificationService {
                     "Certification export downloaded"
             );
 
-            return ResponseEntity.ok()
-                    .contentType(
-                            MediaType.parseMediaType(contentType)
-                    )
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + fileName + "\""
-                    )
-                    .body(resource);
+            ResponseEntity<Resource> response =
+                    ResponseEntity.ok()
+                            .contentType(
+                                    MediaType.parseMediaType(contentType)
+                            )
+                            .header(
+                                    HttpHeaders.CONTENT_DISPOSITION,
+                                    "attachment; filename=\"" + fileName + "\""
+                            )
+                            .body(resource);
+
+            Files.deleteIfExists(filePath);
+
+            return response;
 
         } catch (Exception e) {
 
@@ -672,7 +682,7 @@ public class CertificationServiceImpl implements CertificationService {
             }
 
             Path exportDirectory =
-                    Paths.get("exports");
+                    Paths.get(exportDir);
 
             if (!Files.exists(exportDirectory)) {
 
@@ -852,6 +862,44 @@ public class CertificationServiceImpl implements CertificationService {
                 })
 
                 .toList();
+    }
+
+    @Override
+    public void deleteExportFile(String fileName) {
+
+        try {
+
+            Path filePath =
+                    Paths.get(exportDir)
+                            .resolve(fileName)
+                            .normalize();
+
+            if (!Files.exists(filePath)) {
+
+                throw new FileNotFoundException(
+                        "Export file not found: " + fileName
+                );
+            }
+
+            Files.delete(filePath);
+
+            // AUDIT LOG
+            saveExportAudit(
+                    CertificationAuditActions.FILE_DELETED,
+                    fileName,
+                    fileName.endsWith(".xlsx") ? "excel" : "csv",
+                    1L,
+                    "SYSTEM",
+                    "Manual export file deletion"
+            );
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to delete export file",
+                    e
+            );
+        }
     }
 
     private byte[] exportCsv(

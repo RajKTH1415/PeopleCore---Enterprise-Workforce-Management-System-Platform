@@ -276,4 +276,23 @@ public class CertificationsController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/exports/{fileName}")
+    public ResponseEntity<ApiResponse<String>> deleteExportFile(
+            @PathVariable String fileName,
+            HttpServletRequest request
+    ) {
+
+        certificationService.deleteExportFile(fileName);
+
+        ApiResponse<String> response =
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Export file deleted successfully",
+                        request.getRequestURI(),
+                        fileName
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }

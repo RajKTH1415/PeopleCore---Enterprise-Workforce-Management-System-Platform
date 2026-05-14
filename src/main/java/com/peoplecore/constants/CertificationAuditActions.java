@@ -12,6 +12,7 @@ public final class CertificationAuditActions {
 
     public static final String EXPORT = "EXPORT";
     public static final String DOWNLOAD = "DOWNLOAD";
+    public static final String EXPORT_DELETED = "EXPORT_DELETED";
 
     private CertificationAuditActions() {
     }

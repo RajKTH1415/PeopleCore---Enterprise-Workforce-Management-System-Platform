@@ -73,5 +73,7 @@ public interface CertificationService {
     List<ExportHistoryResponse> getExportHistory();
 
     List<ExportHistoryResponse> getDownloadHistory();
+
+    void deleteExportFile(String fileName);
 }
 
