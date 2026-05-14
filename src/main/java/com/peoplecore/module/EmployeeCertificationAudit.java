@@ -1,5 +1,6 @@
 package com.peoplecore.module;
 
+import com.peoplecore.constants.CertificationAuditActions;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -27,6 +28,9 @@ public class EmployeeCertificationAudit {
 
     private String action;
     // UPLOADED, VERIFIED, RENEWED, UPDATED
+
+//    @Enumerated(EnumType.STRING)
+//    private CertificationAuditActions action;
 
     private String fileName;
 

@@ -156,50 +156,20 @@ public class CertificationsController {
                 );
     }
     @PostMapping("/issuers")
-    public ResponseEntity<ApiResponse<CertificationIssuerResponse>>
-    createIssuer(
-            @RequestBody CertificationIssuerRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-
-        CertificationIssuerResponse response =
-                certificationIssuerService.createIssuer(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.CREATED.value(),
-                                "Certification issuer created successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+    public ResponseEntity<ApiResponse<CertificationIssuerResponse>> createIssuer(@RequestBody CertificationIssuerRequest request, HttpServletRequest httpServletRequest) {
+        CertificationIssuerResponse response = certificationIssuerService.createIssuer(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Certification issuer created successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @GetMapping("/{id}/audit")
-    public ResponseEntity<ApiResponse<List<CertificationAuditResponse>>>
-    getCertificationAudit(
-            @PathVariable("id") Long id,
-            HttpServletRequest httpServletRequest
-    ) {
+    public ResponseEntity<ApiResponse<List<CertificationAuditResponse>>> getCertificationAudit(@PathVariable("id") Long id, HttpServletRequest httpServletRequest) {
 
-        List<CertificationAuditResponse> response =
-                certificationService.getCertificationAudit(id);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        ApiResponse.success(
-                                HttpStatus.OK.value(),
-                                "Certification audit logs fetched successfully",
-                                httpServletRequest.getRequestURI(),
-                                response
-                        )
-                );
+        List<CertificationAuditResponse> response = certificationService.getCertificationAudit(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification audit logs fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 
     @GetMapping("/export")
     public ResponseEntity<ApiResponse<ExportResponse>> exportCertifications(
-
             @RequestParam String format,
 
             @RequestParam(required = false)
@@ -213,8 +183,7 @@ public class CertificationsController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate to,
 
-            HttpServletRequest request
-    ) {
+            HttpServletRequest httpServletRequest) {
 
         LocalDateTime fromDateTime =
                 from != null
@@ -231,8 +200,7 @@ public class CertificationsController {
                         format,
                         status,
                         fromDateTime,
-                        toDateTime
-                );
+                        toDateTime);
 
         ExportResponse exportResponse =
                 ExportResponse.builder()
@@ -247,11 +215,11 @@ public class CertificationsController {
                         )
                         .expiresIn("10 minutes")
                         .downloadUrl(
-                                request.getScheme()
+                                httpServletRequest.getScheme()
                                         + "://"
-                                        + request.getServerName()
+                                        + httpServletRequest.getServerName()
                                         + ":"
-                                        + request.getServerPort()
+                                        + httpServletRequest.getServerPort()
                                         + "/api/v1/certifications/download/"
                                         + fileName
                         )
@@ -261,7 +229,7 @@ public class CertificationsController {
                 ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Export completed successfully",
-                        request.getRequestURI(),
+                        httpServletRequest.getRequestURI(),
                         exportResponse
                 );
 
@@ -270,71 +238,40 @@ public class CertificationsController {
 
     @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadCertificationExport(
-            @PathVariable String fileName
-    ) {
-
-        try {
-
-            Path filePath =
-                    Paths.get("exports")
-                            .resolve(fileName)
-                            .normalize();
-
-            Resource resource =
-                    new UrlResource(filePath.toUri());
-
-            if (!resource.exists()) {
-
-                throw new FileNotFoundException(
-                        "File not found: " + fileName
-                );
-            }
-
-            String contentType;
-
-            if (fileName.endsWith(".xlsx")) {
-
-                contentType =
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-            } else {
-
-                contentType = "text/csv";
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(
-                            MediaType.parseMediaType(contentType)
-                    )
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + fileName + "\""
-                    )
-                    .body(resource);
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(
-                    "Failed to download export file",
-                    e
-            );
-        }
+            @PathVariable String fileName) {
+        return certificationService.downloadCertificationExport(fileName);
     }
 
     @GetMapping("/exports/history")
     public ResponseEntity<ApiResponse<List<ExportHistoryResponse>>> getExportHistory(
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
-        List<ExportHistoryResponse> exportHistory =
-                certificationService.getExportHistory();
+        List<ExportHistoryResponse> exportHistory = certificationService.getExportHistory();
 
         ApiResponse<List<ExportHistoryResponse>> response =
                 ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Export history fetched successfully",
                         request.getRequestURI(),
-                        exportHistory
+                        exportHistory);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/downloads/history")
+    public ResponseEntity<ApiResponse<List<ExportHistoryResponse>>> getDownloadHistory(
+            HttpServletRequest request
+    ) {
+
+        List<ExportHistoryResponse> downloadHistory =
+                certificationService.getDownloadHistory();
+
+        ApiResponse<List<ExportHistoryResponse>> response =
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Download history fetched successfully",
+                        request.getRequestURI(),
+                        downloadHistory
                 );
 
         return ResponseEntity.ok(response);

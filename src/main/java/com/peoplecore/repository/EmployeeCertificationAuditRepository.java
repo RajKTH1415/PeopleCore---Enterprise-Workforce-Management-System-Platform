@@ -15,4 +15,10 @@ public interface EmployeeCertificationAuditRepository
 
     List<EmployeeCertificationAudit>
     findByCertificationIdOrderByPerformedAtDesc(Long certificationId);
+
+
+    List<EmployeeCertificationAudit>
+    findByActionOrderByPerformedAtDesc(
+            String action
+    );
 }

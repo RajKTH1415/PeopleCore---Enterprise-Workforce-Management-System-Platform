@@ -1,5 +1,6 @@
 package com.peoplecore.service.Impl;
 
+import com.peoplecore.constants.CertificationAuditActions;
 import com.peoplecore.dto.request.BulkUpdateCertificationRequest;
 import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.CertificationSkillRequest;
@@ -9,6 +10,7 @@ import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.Certification;
+import com.peoplecore.module.EmployeeCertificationAudit;
 import com.peoplecore.module.Skill;
 import com.peoplecore.repository.CertificationRepository;
 import com.peoplecore.repository.EmployeeCertificationAuditRepository;
@@ -19,14 +21,20 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -96,6 +104,70 @@ public class CertificationServiceImpl implements CertificationService {
                         .createdBy(certification.getCreatedBy())
                         .build())
                 .toList();
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadCertificationExport(
+            String fileName
+    ) {
+
+        try {
+
+            Path filePath =
+                    Paths.get("exports")
+                            .resolve(fileName)
+                            .normalize();
+
+            Resource resource =
+                    new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+
+                throw new FileNotFoundException(
+                        "File not found: " + fileName
+                );
+            }
+
+            String contentType;
+
+            if (fileName.endsWith(".xlsx")) {
+
+                contentType =
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            } else {
+
+                contentType = "text/csv";
+            }
+
+            saveExportAudit(
+                    CertificationAuditActions.DOWNLOAD,
+                    fileName,
+                    fileName.endsWith(".xlsx")
+                            ? "excel"
+                            : "csv",
+                    1L,
+                    "admin@peoplecore.com",
+                    "Certification export downloaded"
+            );
+
+            return ResponseEntity.ok()
+                    .contentType(
+                            MediaType.parseMediaType(contentType)
+                    )
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\""
+                    )
+                    .body(resource);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to download export file",
+                    e
+            );
+        }
     }
 
     @Override
@@ -620,6 +692,14 @@ public class CertificationServiceImpl implements CertificationService {
                     exportDirectory.resolve(fileName);
 
             Files.write(filePath, data);
+            saveExportAudit(
+                    CertificationAuditActions.EXPORT,
+                    fileName,
+                    format,
+                    1L,
+                    "SYSTEM",
+                    "Certification export generated successfully"
+            );
 
             return fileName;
 
@@ -703,6 +783,38 @@ public class CertificationServiceImpl implements CertificationService {
         }
     }
 
+    @Override
+    public List<ExportHistoryResponse> getDownloadHistory() {
+
+        List<EmployeeCertificationAudit> audits =
+                employeeCertificationAuditRepository
+                        .findByActionOrderByPerformedAtDesc(
+                                CertificationAuditActions.DOWNLOAD
+                        );
+
+        return audits.stream()
+
+                .map(audit ->
+
+                        ExportHistoryResponse.builder()
+                                .fileName(
+                                        audit.getFileName()
+                                )
+                                .format(
+                                        audit.getFileType()
+                                )
+                                .createdAt(
+                                        audit.getPerformedAt().toString()
+                                )
+                                .downloadUrl(
+                                        audit.getFileUrl()
+                                )
+                                .build()
+                )
+
+                .toList();
+    }
+
     private byte[] exportCsv(
             List<Certification> certifications
     ) throws IOException {
@@ -780,5 +892,38 @@ public class CertificationServiceImpl implements CertificationService {
         workbook.close();
 
         return outputStream.toByteArray();
+    }
+
+    private void saveExportAudit(
+            String action,
+            String fileName,
+            String format,
+            Long employeeId,
+            String performedBy,
+            String remarks
+    ) {
+
+        EmployeeCertificationAudit audit =
+                new EmployeeCertificationAudit();
+
+        audit.setEmployeeId(employeeId);
+
+        audit.setAction(action);
+
+        audit.setFileName(fileName);
+
+        audit.setFileType(format);
+
+        audit.setPerformedBy(performedBy);
+
+        audit.setPerformedAt(LocalDateTime.now());
+
+        audit.setRemarks(remarks);
+
+        audit.setFileUrl(
+                "/api/v1/certifications/download/" + fileName
+        );
+
+        employeeCertificationAuditRepository.save(audit);
     }
 }

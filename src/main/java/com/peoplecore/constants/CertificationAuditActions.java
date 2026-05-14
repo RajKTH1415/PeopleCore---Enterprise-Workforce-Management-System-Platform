@@ -10,6 +10,9 @@ public final class CertificationAuditActions {
     public static final String VERIFIED = "VERIFIED";
     public static final String RENEWED = "RENEWED";
 
+    public static final String EXPORT = "EXPORT";
+    public static final String DOWNLOAD = "DOWNLOAD";
+
     private CertificationAuditActions() {
     }
 }

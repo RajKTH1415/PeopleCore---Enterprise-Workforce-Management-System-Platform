@@ -6,6 +6,8 @@ import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.*;
 import com.peoplecore.enums.CertificationStatus;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +16,10 @@ import java.util.List;
 public interface CertificationService {
     List<CertificationResponse> bulkCreateCertifications(
             List<CertificationRequest> requests
+    );
+
+    ResponseEntity<Resource> downloadCertificationExport(
+            String fileName
     );
 
     List<CertificationAuditResponse> getCertificationAudit(Long certificationId);
@@ -65,5 +71,7 @@ public interface CertificationService {
             LocalDateTime to
     );
     List<ExportHistoryResponse> getExportHistory();
+
+    List<ExportHistoryResponse> getDownloadHistory();
 }
 
