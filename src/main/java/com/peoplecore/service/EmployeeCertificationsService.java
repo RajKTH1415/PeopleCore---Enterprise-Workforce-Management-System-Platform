@@ -48,6 +48,8 @@ public interface EmployeeCertificationsService {
 
     EmployeeCertificationResponse verifyCertification(Long employeeId, Long certificationId);
 
+    EmployeeCertificationResponse rejectCertification(Long employeeId, Long certificationId);
+
 
 
 

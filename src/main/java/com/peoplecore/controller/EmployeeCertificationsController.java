@@ -125,4 +125,23 @@ public class EmployeeCertificationsController {
                 employeeCertificationsService.verifyCertification(employeeId, certificationId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Certification verified successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @PutMapping("/{employeeId}/certifications/{certificationId}/reject")
+    public ResponseEntity<ApiResponse<EmployeeCertificationResponse>> rejectCertification(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            HttpServletRequest httpServletRequest) {
+
+        EmployeeCertificationResponse response =
+                employeeCertificationsService.rejectCertification(employeeId, certificationId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Certification rejected successfully",
+                        httpServletRequest.getRequestURI(),
+                        response
+                )
+        );
+    }
 }

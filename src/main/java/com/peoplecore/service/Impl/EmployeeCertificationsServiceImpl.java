@@ -383,6 +383,47 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .build();
     }
 
+    @Override
+    public EmployeeCertificationResponse rejectCertification(Long employeeId, Long certificationId) {
+
+        EmployeeCertification entity = employeeCertificationsRepository
+                .findByEmployeeIdAndCertificationId(employeeId, certificationId)
+                .orElseThrow(() ->
+                        new RuntimeException("Employee Certification not found")
+                );
+
+        // Optional business rule validation
+        if (entity.getStatus() == CertificationStatus.REJECTED.name()) {
+            throw new RuntimeException("Certification is already rejected");
+        }
+
+        if (entity.getStatus() == CertificationStatus.VERIFIED.name()) {
+            throw new RuntimeException("Verified certification cannot be rejected");
+        }
+
+        // Update status
+        entity.setStatus(CertificationStatus.REJECTED.name());
+
+
+
+        EmployeeCertification saved = employeeCertificationsRepository.save(entity);
+
+        EmployeeCertificationAudit audit = EmployeeCertificationAudit.builder()
+                .employeeId(employeeId)
+                .certificationId(certificationId)
+                .action("REJECT")
+                .fileName(entity.getFileName())
+                .fileType(entity.getFileType())
+                .fileUrl(entity.getFileUrl())
+                .performedBy("SYSTEM")
+                .performedAt(LocalDateTime.now())
+                .remarks("Certification rejected")
+                .build();
+        employeeCertificationAuditRepository.save(audit);
+
+        return mapToResponse(saved);
+    }
+
     private EmployeeCertificationResponse mapToResponse(EmployeeCertification ec) {
         return EmployeeCertificationResponse.builder()
                 .id(ec.getId())

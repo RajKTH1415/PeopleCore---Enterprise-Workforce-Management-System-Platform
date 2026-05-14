@@ -19,6 +19,8 @@ public interface EmployeeCertificationsRepository extends JpaRepository<Employee
 
     void deleteByCertificationId(Long certificationId);
 
+    Optional<EmployeeCertification> findByEmployeeIdAndCertificationId(Long employeeId, Long certificationId);
+
     Optional<EmployeeCertification> findById(Long aLong);
 
     boolean existsByEmployeeIdAndCertificationIdAndIsDeletedFalse(
