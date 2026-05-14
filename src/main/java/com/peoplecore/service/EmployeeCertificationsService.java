@@ -5,10 +5,8 @@ import com.peoplecore.dto.request.BulkAssignCertificationRequest;
 import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
-import com.peoplecore.dto.response.EmployeeCertificationHistoryResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,7 +49,6 @@ public interface EmployeeCertificationsService {
 
     EmployeeCertificationResponse rejectCertification(Long employeeId, Long certificationId);
 
-    List<EmployeeCertificationHistoryResponse> getCertificationHistory(Long employeeId, Long certificationId);
 
 
 

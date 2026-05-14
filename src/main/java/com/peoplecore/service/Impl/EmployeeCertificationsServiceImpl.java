@@ -1,13 +1,10 @@
 package com.peoplecore.service.Impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.peoplecore.dto.request.AssignCertificationRequest;
 import com.peoplecore.dto.request.BulkAssignCertificationRequest;
 import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
-import com.peoplecore.dto.response.EmployeeCertificationHistoryResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.exception.BadRequestException;
@@ -22,32 +19,27 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Service
 public class EmployeeCertificationsServiceImpl implements EmployeeCertificationsService {
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private final EmployeeCertificationsRepository employeeCertificationsRepository;
     private final CertificationRepository certificationRepository;
     private final EmployeeRepository employeeRepository;
    private final EmployeeCertificationAuditRepository employeeCertificationAuditRepository;
-   private final EmployeeCertificationHistoryRepository employeeCertificationHistoryRepository;
 
-    public EmployeeCertificationsServiceImpl(EmployeeCertificationsRepository employeeCertificationsRepository, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationAuditRepository employeeCertificationAuditRepository, EmployeeCertificationHistoryRepository employeeCertificationHistoryRepository) {
+    public EmployeeCertificationsServiceImpl(EmployeeCertificationsRepository employeeCertificationsRepository, CertificationRepository certificationRepository, EmployeeRepository employeeRepository, EmployeeCertificationAuditRepository employeeCertificationAuditRepository) {
         this.employeeCertificationsRepository = employeeCertificationsRepository;
         this.certificationRepository = certificationRepository;
         this.employeeRepository = employeeRepository;
         this.employeeCertificationAuditRepository = employeeCertificationAuditRepository;
-        this.employeeCertificationHistoryRepository = employeeCertificationHistoryRepository;
+
     }
 
 
@@ -359,30 +351,16 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
             throw new BadRequestException("Cannot verify expired certification");
         }
 
-        // 🔥 STEP 1: BEFORE SNAPSHOT
-        EmployeeCertification before = cloneCertification(ec);
-
-        // 🔥 STEP 2: APPLY CHANGES
         ec.setStatus(CertificationStatus.VERIFIED.name());
+
+        //  NEW AUDIT FIELDS
         ec.setVerifiedBy("SYSTEM"); // later replace with logged-in user
         ec.setVerifiedDate(today);
         ec.setVerificationNotes("Certification verified after validation");
 
-        // 🔥 STEP 3: SAVE AFTER STATE
         EmployeeCertification saved = employeeCertificationsRepository.save(ec);
 
-        // 🔥 STEP 4: HISTORY LOG (FIXED)
-        saveHistory(
-                employeeId,
-                certificationId,
-                "VERIFIED",
-                before,
-                saved,
-                "HR_ADMIN",
-                "Certification verified"
-        );
 
-        // 🔥 STEP 5: RESPONSE
         return EmployeeCertificationResponse.builder()
                 .id(saved.getId())
                 .certificationNumber(saved.getCertificateNumber())
@@ -391,29 +369,13 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
                 .status(saved.getStatus())
                 .proofUrl(saved.getProofUrl())
                 .isDeleted(saved.getIsDeleted())
+
+                //  NEW FIELDS
                 .verifiedBy(saved.getVerifiedBy())
                 .verifiedDate(saved.getVerifiedDate())
                 .verificationNotes(saved.getVerificationNotes())
+
                 .build();
-    }
-    private EmployeeCertification cloneCertification(EmployeeCertification ec) {
-
-        EmployeeCertification copy = new EmployeeCertification();
-
-        copy.setId(ec.getId());
-        copy.setEmployee(ec.getEmployee());
-        copy.setCertification(ec.getCertification());
-        copy.setCertificateNumber(ec.getCertificateNumber());
-        copy.setIssueDate(ec.getIssueDate());
-        copy.setExpiryDate(ec.getExpiryDate());
-        copy.setStatus(ec.getStatus());
-        copy.setProofUrl(ec.getProofUrl());
-        copy.setIsDeleted(ec.getIsDeleted());
-        copy.setVerifiedBy(ec.getVerifiedBy());
-        copy.setVerifiedDate(ec.getVerifiedDate());
-        copy.setVerificationNotes(ec.getVerificationNotes());
-
-        return copy;
     }
 
     @Override
@@ -457,47 +419,6 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
         return mapToResponse(saved);
     }
 
-    @Override
-    public List<EmployeeCertificationHistoryResponse> getCertificationHistory(Long employeeId, Long certificationId) {
-
-        List<EmployeeCertificationHistory> historyList =
-                employeeCertificationHistoryRepository
-                        .findByEmployeeIdAndCertificationIdOrderByChangedAtDesc(employeeId, certificationId);
-
-        return historyList.stream().map(history -> {
-
-            EmployeeCertificationHistoryResponse response = new EmployeeCertificationHistoryResponse();
-
-            response.setId(history.getId());
-            response.setEmployeeId(history.getEmployeeId());
-            response.setCertificationId(history.getCertificationId());
-            response.setAction(history.getAction());
-
-            response.setPreviousValue(convertJsonToMap(history.getPreviousValue()));
-            response.setNewValue(convertJsonToMap(history.getNewValue()));
-
-            response.setChangedBy(history.getChangedBy());
-            response.setChangedAt(history.getChangedAt());
-            response.setRemarks(history.getRemarks());
-
-            return response;
-
-        }).toList();
-    }
-
-    private Map<String, Object> convertJsonToMap(String json) {
-        try {
-            if (json == null || json.isBlank()) {
-                return new HashMap<>();
-            }
-
-            return mapper.readValue(json, new TypeReference<Map<String, Object>>() {
-            });
-        } catch (Exception e) {
-            return new HashMap<>();
-        }
-    }
-
     private EmployeeCertificationResponse mapToResponse(EmployeeCertification ec) {
         return EmployeeCertificationResponse.builder()
                 .id(ec.getId())
@@ -522,36 +443,5 @@ public class EmployeeCertificationsServiceImpl implements EmployeeCertifications
         }
 
         return CertificationStatus.ACTIVE.name();
-    }
-
-    private void saveHistory(
-            Long employeeId,
-            Long certificationId,
-            String action,
-            Object previousValue,
-            Object newValue,
-            String changedBy,
-            String remarks
-    ) {
-        EmployeeCertificationHistory history = new EmployeeCertificationHistory();
-
-        history.setEmployeeId(employeeId);
-        history.setCertificationId(certificationId);
-        history.setAction(action);
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        try {
-            history.setPreviousValue(mapper.writeValueAsString(previousValue));
-            history.setNewValue(mapper.writeValueAsString(newValue));
-        } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON", e);
-        }
-
-        history.setChangedBy(changedBy);
-        history.setChangedAt(LocalDateTime.now());
-        history.setRemarks(remarks);
-
-        employeeCertificationHistoryRepository.save(history);
     }
 }
