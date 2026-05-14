@@ -34,9 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -629,6 +627,77 @@ public class CertificationServiceImpl implements CertificationService {
 
             throw new RuntimeException(
                     "Failed to export certifications",
+                    e
+            );
+        }
+    }
+
+    @Override
+    public List<ExportHistoryResponse> getExportHistory() {
+
+        try {
+
+            Path exportDirectory =
+                    Paths.get("exports");
+
+            if (!Files.exists(exportDirectory)) {
+
+                return Collections.emptyList();
+            }
+
+            List<ExportHistoryResponse> exportHistory =
+                    Files.list(exportDirectory)
+
+                            .filter(Files::isRegularFile)
+
+                            .map(file -> {
+
+                                try {
+
+                                    String fileName =
+                                            file.getFileName().toString();
+
+                                    String format =
+                                            fileName.endsWith(".xlsx")
+                                                    ? "excel"
+                                                    : "csv";
+
+                                    return ExportHistoryResponse.builder()
+                                            .fileName(fileName)
+                                            .format(format)
+                                            .size(
+                                                    Files.size(file)
+                                            )
+                                            .createdAt(
+                                                    Files.getLastModifiedTime(file)
+                                                            .toString()
+                                            )
+                                            .downloadUrl(
+                                                    "/api/v1/certifications/download/"
+                                                            + fileName
+                                            )
+                                            .build();
+
+                                } catch (Exception e) {
+
+                                    throw new RuntimeException(e);
+                                }
+                            })
+
+                            .sorted(
+                                    Comparator.comparing(
+                                            ExportHistoryResponse::getCreatedAt
+                                    ).reversed()
+                            )
+
+                            .toList();
+
+            return exportHistory;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to fetch export history",
                     e
             );
         }

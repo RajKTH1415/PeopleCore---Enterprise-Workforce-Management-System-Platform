@@ -64,5 +64,6 @@ public interface CertificationService {
             LocalDateTime from,
             LocalDateTime to
     );
+    List<ExportHistoryResponse> getExportHistory();
 }
 

@@ -320,4 +320,23 @@ public class CertificationsController {
             );
         }
     }
+
+    @GetMapping("/exports/history")
+    public ResponseEntity<ApiResponse<List<ExportHistoryResponse>>> getExportHistory(
+            HttpServletRequest request
+    ) {
+
+        List<ExportHistoryResponse> exportHistory =
+                certificationService.getExportHistory();
+
+        ApiResponse<List<ExportHistoryResponse>> response =
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Export history fetched successfully",
+                        request.getRequestURI(),
+                        exportHistory
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }
