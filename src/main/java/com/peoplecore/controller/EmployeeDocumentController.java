@@ -19,12 +19,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/employees/documents")
-public class EmployeeDocumentManagementController {
+public class EmployeeDocumentController {
 
 
     private final EmployeesDocumentsService employeesDocumentsService;
 
-    public EmployeeDocumentManagementController(EmployeesDocumentsService employeesDocumentsService) {
+    public EmployeeDocumentController(EmployeesDocumentsService employeesDocumentsService) {
         this.employeesDocumentsService = employeesDocumentsService;
     }
 

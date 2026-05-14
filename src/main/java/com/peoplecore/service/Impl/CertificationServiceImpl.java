@@ -15,6 +15,10 @@ import com.peoplecore.repository.EmployeeCertificationAuditRepository;
 import com.peoplecore.repository.EmployeeCertificationsRepository;
 import com.peoplecore.repository.SkillRepository;
 import com.peoplecore.service.CertificationService;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -528,5 +539,177 @@ public class CertificationServiceImpl implements CertificationService {
                         .map(Skill::getName)
                         .collect(Collectors.toSet()))
                 .build();
+    }
+
+    @Override
+    public String exportCertifications(
+            String format,
+            CertificationStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    ) {
+
+        List<Certification> certifications;
+
+        if (status != null && from != null && to != null) {
+
+            certifications =
+                    certificationRepository
+                            .findByStatusAndCreatedDateBetween(
+                                    status,
+                                    from,
+                                    to
+                            );
+
+        } else if (status != null) {
+
+            certifications =
+                    certificationRepository
+                            .findByStatus(status);
+
+        } else if (from != null && to != null) {
+
+            certifications =
+                    certificationRepository
+                            .findByCreatedDateBetween(
+                                    from,
+                                    to
+                            );
+
+        } else {
+
+            certifications =
+                    certificationRepository.findAll();
+        }
+
+        try {
+
+            byte[] data;
+
+            if ("csv".equalsIgnoreCase(format)) {
+
+                data = exportCsv(certifications);
+
+            } else if ("excel".equalsIgnoreCase(format)) {
+
+                data = exportExcel(certifications);
+
+            } else {
+
+                throw new BadRequestException(
+                        "Unsupported export format"
+                );
+            }
+
+            Path exportDirectory =
+                    Paths.get("exports");
+
+            if (!Files.exists(exportDirectory)) {
+
+                Files.createDirectories(exportDirectory);
+            }
+
+            String fileName =
+                    "certifications_" +
+                            System.currentTimeMillis() +
+                            (
+                                    "excel".equalsIgnoreCase(format)
+                                            ? ".xlsx"
+                                            : ".csv"
+                            );
+
+            Path filePath =
+                    exportDirectory.resolve(fileName);
+
+            Files.write(filePath, data);
+
+            return fileName;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to export certifications",
+                    e
+            );
+        }
+    }
+
+    private byte[] exportCsv(
+            List<Certification> certifications
+    ) throws IOException {
+
+        ByteArrayOutputStream outputStream =
+                new ByteArrayOutputStream();
+
+        PrintWriter writer =
+                new PrintWriter(outputStream);
+
+        writer.println(
+                "ID,Name,Issuer,Status"
+        );
+
+        for (Certification certification : certifications) {
+
+            writer.println(
+                    certification.getId() + "," +
+                            certification.getName() + "," +
+                            certification.getIssuer() + "," +
+                            certification.getStatus()
+            );
+        }
+
+        writer.flush();
+
+        return outputStream.toByteArray();
+    }
+    private byte[] exportExcel(
+            List<Certification> certifications
+    ) throws IOException {
+
+        Workbook workbook = new XSSFWorkbook();
+
+        Sheet sheet =
+                workbook.createSheet("Certifications");
+
+        Row header = sheet.createRow(0);
+
+        header.createCell(0).setCellValue("ID");
+        header.createCell(1).setCellValue("Name");
+        header.createCell(2).setCellValue("Issuer");
+        header.createCell(3).setCellValue("Status");
+
+        int rowNum = 1;
+
+        for (Certification certification : certifications) {
+
+            Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0)
+                    .setCellValue(certification.getId());
+
+            row.createCell(1)
+                    .setCellValue(certification.getName());
+
+            row.createCell(2)
+                    .setCellValue(
+                            certification.getIssuer()
+                    );
+
+            row.createCell(3)
+                    .setCellValue(
+                            certification.getStatus() != null
+                                    ? certification.getStatus().name()
+                                    : ""
+                    );
+        }
+
+        ByteArrayOutputStream outputStream =
+                new ByteArrayOutputStream();
+
+        workbook.write(outputStream);
+
+        workbook.close();
+
+        return outputStream.toByteArray();
     }
 }

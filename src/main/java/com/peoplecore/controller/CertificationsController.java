@@ -1,14 +1,25 @@
 package com.peoplecore.controller;
 import com.peoplecore.dto.request.*;
 import com.peoplecore.dto.response.*;
+import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.service.CertificationIssuerService;
 import com.peoplecore.service.CertificationService;
 import com.peoplecore.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -184,5 +195,129 @@ public class CertificationsController {
                                 response
                         )
                 );
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<ApiResponse<ExportResponse>> exportCertifications(
+
+            @RequestParam String format,
+
+            @RequestParam(required = false)
+            CertificationStatus status,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate from,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate to,
+
+            HttpServletRequest request
+    ) {
+
+        LocalDateTime fromDateTime =
+                from != null
+                        ? from.atStartOfDay()
+                        : null;
+
+        LocalDateTime toDateTime =
+                to != null
+                        ? to.atTime(23, 59, 59)
+                        : null;
+
+        String fileName =
+                certificationService.exportCertifications(
+                        format,
+                        status,
+                        fromDateTime,
+                        toDateTime
+                );
+
+        ExportResponse exportResponse =
+                ExportResponse.builder()
+                        .success(true)
+                        .message(
+                                "Certification export generated successfully"
+                        )
+                        .fileName(fileName)
+                        .format(format)
+                        .generatedAt(
+                                LocalDateTime.now().toString()
+                        )
+                        .expiresIn("10 minutes")
+                        .downloadUrl(
+                                request.getScheme()
+                                        + "://"
+                                        + request.getServerName()
+                                        + ":"
+                                        + request.getServerPort()
+                                        + "/api/v1/certifications/download/"
+                                        + fileName
+                        )
+                        .build();
+
+        ApiResponse<ExportResponse> response =
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Export completed successfully",
+                        request.getRequestURI(),
+                        exportResponse
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<Resource> downloadCertificationExport(
+            @PathVariable String fileName
+    ) {
+
+        try {
+
+            Path filePath =
+                    Paths.get("exports")
+                            .resolve(fileName)
+                            .normalize();
+
+            Resource resource =
+                    new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+
+                throw new FileNotFoundException(
+                        "File not found: " + fileName
+                );
+            }
+
+            String contentType;
+
+            if (fileName.endsWith(".xlsx")) {
+
+                contentType =
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            } else {
+
+                contentType = "text/csv";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(
+                            MediaType.parseMediaType(contentType)
+                    )
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\""
+                    )
+                    .body(resource);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to download export file",
+                    e
+            );
+        }
     }
 }

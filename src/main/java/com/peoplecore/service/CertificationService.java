@@ -5,7 +5,10 @@ import com.peoplecore.dto.request.CertificationRequest;
 import com.peoplecore.dto.request.CertificationSkillRequest;
 import com.peoplecore.dto.request.UpdateCertificationStatusRequest;
 import com.peoplecore.dto.response.*;
+import com.peoplecore.enums.CertificationStatus;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CertificationService {
@@ -54,5 +57,12 @@ public interface CertificationService {
     CertificationSkillResponse addSkills(Long id, CertificationSkillRequest request);
 
     CertificationSkillResponse getSkills(Long id);
+
+    String exportCertifications(
+            String format,
+            CertificationStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    );
 }
 

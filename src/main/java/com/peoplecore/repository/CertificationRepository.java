@@ -1,5 +1,6 @@
 package com.peoplecore.repository;
 
+import com.peoplecore.enums.CertificationStatus;
 import com.peoplecore.module.Certification;
 import com.peoplecore.module.EmployeeCertification;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,4 +100,37 @@ Page<Certification> findCertificationsWithFilters(
 
 
     Optional<Certification> findByNameIgnoreCase(String title);
+
+//    @Query("""
+//       SELECT c
+//       FROM Certification c
+//       WHERE
+//       (:status IS NULL OR c.status = :status)
+//       AND
+//       (:fromDate IS NULL OR c.createdDate >= :fromDate)
+//       AND
+//       (:toDate IS NULL OR c.createdDate <= :toDate)
+//       """)
+//    List<Certification> exportCertifications(
+//            @Param("status") CertificationStatus status,
+//            @Param("fromDate") LocalDateTime fromDate,
+//            @Param("toDate") LocalDateTime toDate
+//    );
+
+
+
+    List<Certification> findByStatus(
+            CertificationStatus status
+    );
+
+    List<Certification> findByCreatedDateBetween(
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    List<Certification> findByStatusAndCreatedDateBetween(
+            CertificationStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    );
 }
