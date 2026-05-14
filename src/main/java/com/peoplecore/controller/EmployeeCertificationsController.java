@@ -4,6 +4,7 @@ import com.peoplecore.dto.request.BulkAssignCertificationRequest;
 import com.peoplecore.dto.request.RenewCertificationRequest;
 import com.peoplecore.dto.request.UpdateEmployeeCertificationRequest;
 import com.peoplecore.dto.response.BulkAssignResponse;
+import com.peoplecore.dto.response.EmployeeCertificationHistoryResponse;
 import com.peoplecore.dto.response.EmployeeCertificationResponse;
 import com.peoplecore.dto.response.PageResponse;
 import com.peoplecore.service.EmployeeCertificationsService;
@@ -139,6 +140,25 @@ public class EmployeeCertificationsController {
                 ApiResponse.success(
                         HttpStatus.OK.value(),
                         "Certification rejected successfully",
+                        httpServletRequest.getRequestURI(),
+                        response
+                )
+        );
+    }
+
+    @GetMapping("/{employeeId}/certifications/{certificationId}/history")
+    public ResponseEntity<ApiResponse<List<EmployeeCertificationHistoryResponse>>> getCertificationHistory(
+            @PathVariable Long employeeId,
+            @PathVariable Long certificationId,
+            HttpServletRequest httpServletRequest) {
+
+        List<EmployeeCertificationHistoryResponse> response =
+                employeeCertificationsService.getCertificationHistory(employeeId, certificationId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        "Certification history fetched successfully",
                         httpServletRequest.getRequestURI(),
                         response
                 )
