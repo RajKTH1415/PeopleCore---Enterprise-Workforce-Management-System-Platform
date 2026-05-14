@@ -7,13 +7,21 @@ import lombok.Data;
 @Builder
 public class ExportHistoryResponse {
 
+    private Long auditId;
+
+    private String action;
+
     private String fileName;
 
     private String format;
 
-    private Long size;
+    private Long fileSize;
 
-    private String createdAt;
+    private String downloadedBy;
+
+    private String downloadedAt;
 
     private String downloadUrl;
+
+    private String createdAt;
 }

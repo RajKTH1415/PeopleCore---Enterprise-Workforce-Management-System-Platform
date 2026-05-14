@@ -745,7 +745,7 @@ public class CertificationServiceImpl implements CertificationService {
                                     return ExportHistoryResponse.builder()
                                             .fileName(fileName)
                                             .format(format)
-                                            .size(
+                                            .fileSize(
                                                     Files.size(file)
                                             )
                                             .createdAt(
@@ -794,23 +794,62 @@ public class CertificationServiceImpl implements CertificationService {
 
         return audits.stream()
 
-                .map(audit ->
+                .map(audit -> {
 
-                        ExportHistoryResponse.builder()
-                                .fileName(
-                                        audit.getFileName()
-                                )
-                                .format(
-                                        audit.getFileType()
-                                )
-                                .createdAt(
-                                        audit.getPerformedAt().toString()
-                                )
-                                .downloadUrl(
-                                        audit.getFileUrl()
-                                )
-                                .build()
-                )
+                    Long fileSize = null;
+
+                    try {
+
+                        Path filePath =
+                                Paths.get("exports")
+                                        .resolve(audit.getFileName());
+
+                        if (Files.exists(filePath)) {
+
+                            fileSize = Files.size(filePath);
+                        }
+
+                    } catch (Exception e) {
+
+                        fileSize = 0L;
+                    }
+
+                    return ExportHistoryResponse.builder()
+
+                            .auditId(
+                                    audit.getId()
+                            )
+
+                            .action(
+                                    audit.getAction()
+                            )
+
+                            .fileName(
+                                    audit.getFileName()
+                            )
+
+                            .format(
+                                    audit.getFileType()
+                            )
+
+                            .fileSize(
+                                    fileSize
+                            )
+
+                            .downloadedBy(
+                                    audit.getPerformedBy()
+                            )
+
+                            .downloadedAt(
+                                    audit.getPerformedAt().toString()
+                            )
+
+                            .downloadUrl(
+                                    audit.getFileUrl()
+                            )
+
+                            .build();
+                })
 
                 .toList();
     }
