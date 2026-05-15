@@ -7,6 +7,7 @@ import com.peoplecore.repository.CountryRepository;
 import com.peoplecore.service.CountryService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -77,6 +78,29 @@ public class CountryServiceImpl implements CountryService {
         CountryMaster updatedCountry = countryRepository.save(country);
 
         return mapToResponse(updatedCountry);
+    }
+
+    @Override
+    public void deleteCountry(Long id) {
+
+        CountryMaster country = countryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Country not found with id: " + id));
+
+        country.setIsActive(false);
+        country.setUpdatedBy("SYSTEM");
+        country.setUpdatedDate(LocalDateTime.now());
+
+        countryRepository.save(country);
+    }
+
+    @Override
+    public void deleteAllCountries() {
+
+        if (countryRepository.count() == 0) {
+            throw new RuntimeException("No countries available to delete");
+        }
+
+        countryRepository.deleteAllInBatch();
     }
 
 

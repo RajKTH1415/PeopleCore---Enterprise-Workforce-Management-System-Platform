@@ -15,6 +15,10 @@ public interface CountryService {
 
     CountryResponse updateCountry(Long id, CountryRequest request);
 
+    void deleteCountry(Long id);
+
+    void deleteAllCountries();
+
 
 
 }

@@ -42,4 +42,16 @@ public class CountryController {
         CountryResponse countryResponse = countryService.updateCountry(id, countryRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Country updated successfully", httpServletRequest.getRequestURI(), countryResponse));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteCountry(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        countryService.deleteCountry(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Country deleted successfully", httpServletRequest.getRequestURI(), null));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<String>> deleteAllCountries(HttpServletRequest httpServletRequest) {
+        countryService.deleteAllCountries();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "All countries deleted successfully", httpServletRequest.getRequestURI(), null));
+    }
 }
