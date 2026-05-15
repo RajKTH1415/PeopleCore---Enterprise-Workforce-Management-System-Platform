@@ -13,6 +13,8 @@ public interface CountryService {
 
     CountryResponse getCountryById(Long id);
 
+    CountryResponse updateCountry(Long id, CountryRequest request);
+
 
 
 }

@@ -56,6 +56,30 @@ public class CountryServiceImpl implements CountryService {
         return mapToResponse(country);
     }
 
+    @Override
+    public CountryResponse updateCountry(Long id, CountryRequest request) {
+
+        CountryMaster country = countryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Country not found"));
+
+        if (!country.getCode().equals(request.getCode())
+                && countryRepository.existsByCode(request.getCode())) {
+            throw new RuntimeException("Country code already exists");
+        }
+
+        country.setCode(request.getCode());
+        country.setName(request.getName());
+        country.setDialCode(request.getDialCode());
+        country.setCurrencyCode(request.getCurrencyCode());
+
+        country.setUpdatedBy("SYSTEM");
+
+        CountryMaster updatedCountry = countryRepository.save(country);
+
+        return mapToResponse(updatedCountry);
+    }
+
+
     private CountryResponse mapToResponse(
             CountryMaster country) {
 
