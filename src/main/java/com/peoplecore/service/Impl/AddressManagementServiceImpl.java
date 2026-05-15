@@ -44,17 +44,12 @@ public class AddressManagementServiceImpl
     private final CityRepository cityRepository;
 
     @Override
-    public AddressResponse addAddress(Long employeeId,
-                                      AddressRequest request) {
-
+    public AddressResponse addAddress(Long employeeId, AddressRequest request) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Employee not found with id : " + employeeId
-                        ));
-
+                                "Employee not found with id : " + employeeId));
         if (Boolean.TRUE.equals(request.getIsPrimary())) {
-
             employeeAddressRepository
                     .findByEmployeeIdAndIsPrimaryTrue(employeeId)
                     .ifPresent(existing -> {
