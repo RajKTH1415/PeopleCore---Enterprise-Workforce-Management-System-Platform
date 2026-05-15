@@ -20,4 +20,5 @@ public interface EmployeeAddressRepository
             String addressType
     );
 
+    List<EmployeeAddress> findByEmployeeId(Long employeeId);
 }

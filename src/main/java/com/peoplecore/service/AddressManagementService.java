@@ -3,8 +3,13 @@ package com.peoplecore.service;
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 
+import java.util.List;
+
 public interface AddressManagementService {
 
 
     AddressResponse addAddress(Long employeeId, AddressRequest request);
+
+
+    List<AddressResponse> getAddressesByEmployeeId(Long employeeId);
 }

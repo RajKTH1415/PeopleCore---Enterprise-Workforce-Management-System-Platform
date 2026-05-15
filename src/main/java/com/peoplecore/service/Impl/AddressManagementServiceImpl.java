@@ -26,14 +26,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class AddressManagementServiceImpl
-        implements AddressManagementService {
+public class AddressManagementServiceImpl implements AddressManagementService {
 
     private final EmployeeAddressRepository employeeAddressRepository;
     private final EmployeeRepository employeeRepository;
@@ -42,6 +41,16 @@ public class AddressManagementServiceImpl
     private final CountryRepository countryRepository;
     private final StateRepository stateRepository;
     private final CityRepository cityRepository;
+
+    public AddressManagementServiceImpl(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository, AddressHistoryRepository addressHistoryRepository, GeocodingService geocodingService, CountryRepository countryRepository, StateRepository stateRepository, CityRepository cityRepository) {
+        this.employeeAddressRepository = employeeAddressRepository;
+        this.employeeRepository = employeeRepository;
+        this.addressHistoryRepository = addressHistoryRepository;
+        this.geocodingService = geocodingService;
+        this.countryRepository = countryRepository;
+        this.stateRepository = stateRepository;
+        this.cityRepository = cityRepository;
+    }
 
     @Override
     public AddressResponse addAddress(Long employeeId, AddressRequest request) {
@@ -114,6 +123,8 @@ public class AddressManagementServiceImpl
                 .effectiveTo(request.getEffectiveTo())
                 .residenceType(request.getResidenceType())
                 .staySince(request.getStaySince())
+                .updatedBy("SYSTEM")
+                .updatedDate(LocalDateTime.now())
                 .notes(request.getNotes())
                 .build();
 
@@ -145,6 +156,23 @@ public class AddressManagementServiceImpl
 
         return mapToResponse(savedAddress);
     }
+
+    @Override
+    public List<AddressResponse> getAddressesByEmployeeId(Long employeeId) {
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() ->
+                        new RuntimeException("Employee not found with id: " + employeeId));
+
+        List<EmployeeAddress> addresses =
+                employeeAddressRepository.findByEmployeeId(employeeId);
+
+        // 3. Map to DTO
+        return addresses.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
 
     private void saveAddressHistory(EmployeeAddress address,
                                     String action) {

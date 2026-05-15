@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/address")
 public class AddressManagementController {
@@ -26,5 +28,10 @@ public class AddressManagementController {
     public ResponseEntity<ApiResponse<AddressResponse>> addAddress(@PathVariable Long employeeId, @RequestBody AddressRequest request, HttpServletRequest httpServletRequest) {
         AddressResponse response = addressManagementService.addAddress(employeeId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(), "Address added successfully",httpServletRequest.getRequestURI(), response));
+    }
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<ApiResponse<List<AddressResponse>>> getEmployeeAddresses(@PathVariable Long employeeId, HttpServletRequest httpServletRequest) {
+        List<AddressResponse> response = addressManagementService.getAddressesByEmployeeId(employeeId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Employee addresses fetched successfully", httpServletRequest.getRequestURI(), response));
     }
 }

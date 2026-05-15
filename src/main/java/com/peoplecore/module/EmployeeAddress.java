@@ -81,9 +81,6 @@ public class EmployeeAddress {
     )
     private CountryMaster countryMaster;
 
-    // =========================================
-    // Geo Location
-    // =========================================
 
     @Column(name = "latitude", precision = 10, scale = 8)
     private BigDecimal latitude;

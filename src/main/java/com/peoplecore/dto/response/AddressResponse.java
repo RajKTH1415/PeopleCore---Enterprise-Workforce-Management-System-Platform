@@ -1,4 +1,4 @@
-package com.peoplecore.dto.response;
+package com.peoplecore.dto.response;//package com.peoplecore.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,4 +59,5 @@ public class AddressResponse {
     private String createdBy;
     private LocalDateTime updatedDate;
     private String updatedBy;
+
 }
