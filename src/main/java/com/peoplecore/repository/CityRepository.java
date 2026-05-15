@@ -1,9 +1,11 @@
 package com.peoplecore.repository;
 
 import com.peoplecore.module.CityMaster;
+import com.peoplecore.module.StateMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +17,6 @@ public interface CityRepository extends JpaRepository<CityMaster, Long> {
     Optional<CityMaster> findByNameIgnoreCase(String name);
 
     Optional<CityMaster> findByNameIgnoreCaseAndStateId(String city, Long id);
+
+    Collection<CityMaster> findByState(StateMaster state);
 }

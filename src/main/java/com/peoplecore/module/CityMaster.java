@@ -31,9 +31,6 @@ public class CityMaster {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // =========================================
-    // State Mapping
-    // =========================================
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -42,10 +39,6 @@ public class CityMaster {
             foreignKey = @ForeignKey(name = "fk_city_state")
     )
     private StateMaster state;
-
-    // =========================================
-    // City Details
-    // =========================================
 
     @Column(name = "code", length = 20)
     private String code;
@@ -56,17 +49,13 @@ public class CityMaster {
     @Column(name = "pin_code", length = 10)
     private String pinCode;
 
-    // =========================================
-    // Status
-    // =========================================
+
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
 
-    // =========================================
-    // Audit Fields
-    // =========================================
+
 
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
@@ -80,9 +69,6 @@ public class CityMaster {
     @Column(name = "updated_by", length = 50)
     private String updatedBy;
 
-    // =========================================
-    // Lifecycle Hooks
-    // =========================================
 
     @PrePersist
     public void prePersist() {
