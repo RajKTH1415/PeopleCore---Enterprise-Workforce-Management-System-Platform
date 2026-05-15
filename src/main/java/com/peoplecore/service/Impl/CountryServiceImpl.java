@@ -7,6 +7,8 @@ import com.peoplecore.repository.CountryRepository;
 import com.peoplecore.service.CountryService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CountryServiceImpl implements CountryService {
 
@@ -37,6 +39,15 @@ public class CountryServiceImpl implements CountryService {
         CountryMaster savedCountry = countryRepository.save(country);
 
         return mapToResponse(savedCountry);
+    }
+
+    @Override
+    public List<CountryResponse> getAllCountries() {
+
+        return countryRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private CountryResponse mapToResponse(

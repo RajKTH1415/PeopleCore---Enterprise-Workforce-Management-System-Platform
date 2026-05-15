@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/countries")
 public class CountryController {
@@ -24,6 +26,10 @@ public class CountryController {
     public ResponseEntity<ApiResponse<CountryResponse>> createCountry(@RequestBody CountryRequest countryRequest, HttpServletRequest httpServletRequest){
         CountryResponse countryResponse = countryService.createCountry(countryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED.value(),"Country created successfully", httpServletRequest.getRequestURI(), countryResponse));
-
+    }
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<CountryResponse>>> getAllCountries(HttpServletRequest httpServletRequest) {
+        List<CountryResponse> countries = countryService.getAllCountries();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Countries fetched successfully", httpServletRequest.getRequestURI(), countries));
     }
 }
