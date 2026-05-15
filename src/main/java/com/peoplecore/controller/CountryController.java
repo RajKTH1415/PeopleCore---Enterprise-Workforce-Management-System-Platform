@@ -32,4 +32,9 @@ public class CountryController {
         List<CountryResponse> countries = countryService.getAllCountries();
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Countries fetched successfully", httpServletRequest.getRequestURI(), countries));
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CountryResponse>> getCountryById(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        CountryResponse countryResponse = countryService.getCountryById(id);
+       return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Country fetched successfully", httpServletRequest.getRequestURI(), countryResponse));
+    }
 }

@@ -49,6 +49,12 @@ public class CountryServiceImpl implements CountryService {
                 .map(this::mapToResponse)
                 .toList();
     }
+    @Override
+    public CountryResponse getCountryById(Long id) {
+        CountryMaster country = countryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Country not found"));
+        return mapToResponse(country);
+    }
 
     private CountryResponse mapToResponse(
             CountryMaster country) {

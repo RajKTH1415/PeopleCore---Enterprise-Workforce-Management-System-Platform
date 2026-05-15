@@ -11,6 +11,8 @@ public interface CountryService {
 
     List<CountryResponse> getAllCountries();
 
+    CountryResponse getCountryById(Long id);
+
 
 
 }
