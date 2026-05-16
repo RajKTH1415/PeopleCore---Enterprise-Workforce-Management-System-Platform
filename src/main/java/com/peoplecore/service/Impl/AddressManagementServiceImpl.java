@@ -3,6 +3,7 @@ package com.peoplecore.service.Impl;
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.dto.response.GeocodeResponse;
+import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.AddressHistory;
 import com.peoplecore.module.CityMaster;
 import com.peoplecore.module.CountryMaster;
@@ -171,6 +172,18 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         return addresses.stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public AddressResponse getAddressById(Long addressId) {
+
+        EmployeeAddress address = employeeAddressRepository.findById(addressId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Address not found with id: " + addressId
+                        ));
+
+        return mapToResponse(address);
     }
 
 

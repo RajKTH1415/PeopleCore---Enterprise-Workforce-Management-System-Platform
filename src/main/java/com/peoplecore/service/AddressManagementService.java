@@ -12,4 +12,7 @@ public interface AddressManagementService {
 
 
     List<AddressResponse> getAddressesByEmployeeId(Long employeeId);
+
+
+    AddressResponse getAddressById(Long addressId);
 }

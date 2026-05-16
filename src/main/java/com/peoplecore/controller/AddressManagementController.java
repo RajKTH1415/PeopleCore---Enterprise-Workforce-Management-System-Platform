@@ -34,4 +34,9 @@ public class AddressManagementController {
         List<AddressResponse> response = addressManagementService.getAddressesByEmployeeId(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Employee addresses fetched successfully", httpServletRequest.getRequestURI(), response));
     }
+    @GetMapping("/{addressId}")
+    public ResponseEntity<ApiResponse<AddressResponse>> getAddressById(@PathVariable Long addressId, HttpServletRequest httpServletRequest) {
+        AddressResponse response = addressManagementService.getAddressById(addressId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Address fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
 }
