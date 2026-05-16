@@ -51,4 +51,10 @@ public class AddressManagementController {
         AddressResponse response = addressManagementService.setPrimaryAddress(addressId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Primary address updated successfully", request.getRequestURI(), response));
     }
+
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<ApiResponse<String>> deleteAddress(@PathVariable Long addressId, HttpServletRequest request) {
+        addressManagementService.deleteAddress(addressId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address deleted successfully", request.getRequestURI(), null));
+    }
 }

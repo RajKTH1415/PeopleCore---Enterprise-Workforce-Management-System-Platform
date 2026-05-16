@@ -4,6 +4,7 @@ import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.dto.response.GeocodeResponse;
+import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
 import com.peoplecore.module.AddressHistory;
 import com.peoplecore.module.CityMaster;
@@ -30,6 +31,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -333,6 +335,63 @@ public class AddressManagementServiceImpl implements AddressManagementService {
 
         return mapToResponse(updatedAddress);
     }
+
+    @Override
+    @Transactional
+    public void deleteAddress(Long addressId) {
+
+        EmployeeAddress address =
+                employeeAddressRepository.findById(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Address not found with id : "
+                                                + addressId
+                                ));
+
+        if (Boolean.TRUE.equals(address.getIsDeleted())) {
+
+            throw new BadRequestException(
+                    "Address already deleted"
+            );
+        }
+
+        saveAddressHistory(
+                address,
+                "DELETED"
+        );
+
+        boolean wasPrimary =
+                Boolean.TRUE.equals(address.getIsPrimary());
+
+        Long employeeId =
+                address.getEmployee().getId();
+
+        address.setIsDeleted(true);
+        address.setIsActive(false);
+        address.setIsPrimary(false);
+
+        address.setUpdatedDate(LocalDateTime.now());
+        address.setUpdatedBy("SYSTEM");
+
+        employeeAddressRepository.save(address);
+
+        if (wasPrimary) {
+
+            Optional<EmployeeAddress> nextPrimary =
+                    employeeAddressRepository
+                            .findFirstByEmployeeIdAndIsDeletedFalseAndIsActiveTrueOrderByCreatedDateAsc(
+                                    employeeId
+                            );
+
+            nextPrimary.ifPresent(existing -> {
+
+                existing.setIsPrimary(true);
+
+                employeeAddressRepository.save(existing);
+            });
+        }
+    }
+
     private void saveAddressHistory(EmployeeAddress address,
                                     String action) {
 

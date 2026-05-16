@@ -38,4 +38,9 @@ public interface EmployeeAddressRepository
     void removePrimaryAddress(
             @Param("employeeId") Long employeeId
     );
+
+    Optional<EmployeeAddress>
+    findFirstByEmployeeIdAndIsDeletedFalseAndIsActiveTrueOrderByCreatedDateAsc(
+            Long employeeId
+    );
 }

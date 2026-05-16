@@ -23,4 +23,6 @@ public interface AddressManagementService {
     );
 
     AddressResponse setPrimaryAddress(Long addressId);
+
+    void deleteAddress(Long addressId);
 }
