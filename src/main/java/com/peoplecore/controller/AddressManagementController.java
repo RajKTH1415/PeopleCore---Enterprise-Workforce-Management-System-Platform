@@ -2,6 +2,7 @@ package com.peoplecore.controller;
 
 
 import com.peoplecore.dto.request.AddressRequest;
+import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.service.AddressManagementService;
 import com.peoplecore.util.ApiResponse;
@@ -38,5 +39,10 @@ public class AddressManagementController {
     public ResponseEntity<ApiResponse<AddressResponse>> getAddressById(@PathVariable Long addressId, HttpServletRequest httpServletRequest) {
         AddressResponse response = addressManagementService.getAddressById(addressId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Address fetched successfully", httpServletRequest.getRequestURI(), response));
+    }
+    @PutMapping("/{addressId}")
+    public ResponseEntity<ApiResponse<AddressResponse>> updateAddress(@PathVariable Long addressId, @RequestBody UpdateAddressRequest request, HttpServletRequest httpServletRequest) {
+        AddressResponse response = addressManagementService.updateAddress(addressId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Address updated successfully", httpServletRequest.getRequestURI(), response));
     }
 }

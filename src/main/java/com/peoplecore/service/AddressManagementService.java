@@ -1,6 +1,7 @@
 package com.peoplecore.service;
 
 import com.peoplecore.dto.request.AddressRequest;
+import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 
 import java.util.List;
@@ -15,4 +16,9 @@ public interface AddressManagementService {
 
 
     AddressResponse getAddressById(Long addressId);
+
+    AddressResponse updateAddress(
+            Long addressId,
+            UpdateAddressRequest request
+    );
 }

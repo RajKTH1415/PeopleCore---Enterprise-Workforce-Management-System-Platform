@@ -2,6 +2,9 @@ package com.peoplecore.repository;
 
 import com.peoplecore.module.EmployeeAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +24,15 @@ public interface EmployeeAddressRepository
     );
 
     List<EmployeeAddress> findByEmployeeId(Long employeeId);
+
+
+    @Modifying
+    @Query("""
+       UPDATE EmployeeAddress ea
+       SET ea.isPrimary = false
+       WHERE ea.employee.id = :employeeId
+       """)
+    void removePrimaryAddress(
+            @Param("employeeId") Long employeeId
+    );
 }

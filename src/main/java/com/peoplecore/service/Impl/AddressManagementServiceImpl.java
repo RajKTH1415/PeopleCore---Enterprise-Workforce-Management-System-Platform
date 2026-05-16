@@ -1,6 +1,7 @@
 package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.request.AddressRequest;
+import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.dto.response.GeocodeResponse;
 import com.peoplecore.exception.ResourceNotFoundException;
@@ -184,6 +185,115 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                         ));
 
         return mapToResponse(address);
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse updateAddress(
+            Long addressId,
+            UpdateAddressRequest request) {
+
+        EmployeeAddress existingAddress =
+                employeeAddressRepository.findById(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Address not found with id : "
+                                                + addressId
+                                ));
+
+        saveAddressHistory(existingAddress, "UPDATED");
+
+        if (Boolean.TRUE.equals(request.getPrimaryAddress())) {
+
+            employeeAddressRepository.removePrimaryAddress(
+                    existingAddress.getEmployee().getId()
+            );
+        }
+
+        CountryMaster country =
+                countryRepository.findById(request.getCountryId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Country not found"
+                                ));
+
+        StateMaster state =
+                stateRepository.findById(request.getStateId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "State not found"
+                                ));
+
+        CityMaster city =
+                cityRepository.findById(request.getCityId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "City not found"
+                                ));
+
+        existingAddress.setAddressType(
+                request.getAddressType()
+        );
+
+        existingAddress.setAddressLine1(
+                request.getAddressLine1()
+        );
+
+        existingAddress.setAddressLine2(
+                request.getAddressLine2()
+        );
+
+        existingAddress.setLandmark(
+                request.getLandmark()
+        );
+
+        existingAddress.setCity(city.getName());
+        existingAddress.setState(state.getName());
+        existingAddress.setCountry(country.getName());
+
+        existingAddress.setCityMaster(city);
+        existingAddress.setStateMaster(state);
+        existingAddress.setCountryMaster(country);
+
+        existingAddress.setPincode(
+                request.getPostalCode()
+        );
+
+        existingAddress.setIsPrimary(
+                request.getPrimaryAddress()
+        );
+
+        existingAddress.setResidenceType(
+                request.getResidenceType()
+        );
+
+        existingAddress.setStaySince(
+                request.getStaySince()
+        );
+
+        existingAddress.setEffectiveFrom(
+                request.getEffectiveFrom()
+        );
+
+        existingAddress.setEffectiveTo(
+                request.getEffectiveTo()
+        );
+
+        existingAddress.setNotes(
+                request.getNotes()
+        );
+
+        existingAddress.setIsVerified(false);
+        existingAddress.setVerifiedDate(null);
+        existingAddress.setVerifiedBy(null);
+
+        existingAddress.setUpdatedDate(LocalDateTime.now());
+        existingAddress.setUpdatedBy("SYSTEM");
+
+        EmployeeAddress updatedAddress =
+                employeeAddressRepository.save(existingAddress);
+
+        return mapToResponse(updatedAddress);
     }
 
 
