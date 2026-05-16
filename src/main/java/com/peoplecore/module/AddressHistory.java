@@ -33,10 +33,6 @@ public class AddressHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // =========================================
-    // Address Mapping
-    // =========================================
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "address_id",
@@ -45,9 +41,6 @@ public class AddressHistory {
     )
     private EmployeeAddress address;
 
-    // =========================================
-    // Employee Mapping
-    // =========================================
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -57,16 +50,9 @@ public class AddressHistory {
     )
     private Employee employee;
 
-    // =========================================
-    // Audit Action
-    // =========================================
-
     @Column(name = "action", nullable = false, length = 20)
     private String action;
 
-    // =========================================
-    // JSON Change Tracking
-    // =========================================
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "old_value", columnDefinition = "jsonb")
@@ -76,9 +62,6 @@ public class AddressHistory {
     @Column(name = "new_value", columnDefinition = "jsonb")
     private Map<String, Object> newValue;
 
-    // =========================================
-    // Audit Details
-    // =========================================
 
     @Column(name = "changed_at", nullable = false, updatable = false)
     private LocalDateTime changedAt;
@@ -92,9 +75,6 @@ public class AddressHistory {
     @Column(name = "remarks", columnDefinition = "TEXT")
     private String remarks;
 
-    // =========================================
-    // Lifecycle Hooks
-    // =========================================
 
     @PrePersist
     public void prePersist() {

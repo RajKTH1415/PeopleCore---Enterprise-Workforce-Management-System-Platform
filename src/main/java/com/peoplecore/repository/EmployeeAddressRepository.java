@@ -26,7 +26,10 @@ public interface EmployeeAddressRepository
     List<EmployeeAddress> findByEmployeeId(Long employeeId);
 
 
-    @Modifying
+    @Modifying(
+            clearAutomatically = true,
+            flushAutomatically = true
+    )
     @Query("""
        UPDATE EmployeeAddress ea
        SET ea.isPrimary = false

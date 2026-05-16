@@ -296,7 +296,43 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         return mapToResponse(updatedAddress);
     }
 
+    @Override
+    @Transactional
+    public AddressResponse setPrimaryAddress(Long addressId) {
 
+        EmployeeAddress address =
+                employeeAddressRepository.findById(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Address not found with id : "
+                                                + addressId
+                                ));
+
+        if (Boolean.TRUE.equals(address.getIsPrimary())) {
+            return mapToResponse(address);
+        }
+
+        saveAddressHistory(
+                address,
+                "PRIMARY_ADDRESS_CHANGED"
+        );
+
+        Long employeeId =
+                address.getEmployee().getId();
+
+        employeeAddressRepository
+                .removePrimaryAddress(employeeId);
+
+        address.setIsPrimary(true);
+
+        address.setUpdatedDate(LocalDateTime.now());
+        address.setUpdatedBy("SYSTEM");
+
+        EmployeeAddress updatedAddress =
+                employeeAddressRepository.save(address);
+
+        return mapToResponse(updatedAddress);
+    }
     private void saveAddressHistory(EmployeeAddress address,
                                     String action) {
 

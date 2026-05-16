@@ -21,4 +21,6 @@ public interface AddressManagementService {
             Long addressId,
             UpdateAddressRequest request
     );
+
+    AddressResponse setPrimaryAddress(Long addressId);
 }

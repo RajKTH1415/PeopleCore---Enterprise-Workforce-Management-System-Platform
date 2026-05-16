@@ -45,4 +45,10 @@ public class AddressManagementController {
         AddressResponse response = addressManagementService.updateAddress(addressId, request);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Address updated successfully", httpServletRequest.getRequestURI(), response));
     }
+
+    @PatchMapping("/{addressId}/primary")
+    public ResponseEntity<ApiResponse<AddressResponse>> setPrimaryAddress(@PathVariable Long addressId, HttpServletRequest request) {
+        AddressResponse response = addressManagementService.setPrimaryAddress(addressId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Primary address updated successfully", request.getRequestURI(), response));
+    }
 }
