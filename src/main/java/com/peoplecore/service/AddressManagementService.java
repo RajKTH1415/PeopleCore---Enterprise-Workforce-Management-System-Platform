@@ -2,6 +2,7 @@ package com.peoplecore.service;
 
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
+import com.peoplecore.dto.request.VerifyAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 
 import java.util.List;
@@ -25,4 +26,9 @@ public interface AddressManagementService {
     AddressResponse setPrimaryAddress(Long addressId);
 
     void deleteAddress(Long addressId);
+
+    AddressResponse verifyAddress(
+            Long addressId,
+            VerifyAddressRequest request
+    );
 }

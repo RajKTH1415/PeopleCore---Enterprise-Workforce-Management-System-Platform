@@ -2,22 +2,13 @@ package com.peoplecore.service.Impl;
 
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
+import com.peoplecore.dto.request.VerifyAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.dto.response.GeocodeResponse;
 import com.peoplecore.exception.BadRequestException;
 import com.peoplecore.exception.ResourceNotFoundException;
-import com.peoplecore.module.AddressHistory;
-import com.peoplecore.module.CityMaster;
-import com.peoplecore.module.CountryMaster;
-import com.peoplecore.module.Employee;
-import com.peoplecore.module.EmployeeAddress;
-import com.peoplecore.module.StateMaster;
-import com.peoplecore.repository.AddressHistoryRepository;
-import com.peoplecore.repository.CityRepository;
-import com.peoplecore.repository.CountryRepository;
-import com.peoplecore.repository.EmployeeAddressRepository;
-import com.peoplecore.repository.EmployeeRepository;
-import com.peoplecore.repository.StateRepository;
+import com.peoplecore.module.*;
+import com.peoplecore.repository.*;
 import com.peoplecore.service.AddressManagementService;
 import com.peoplecore.service.GeocodingService;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 @Slf4j
 @Service
 @Transactional
 public class AddressManagementServiceImpl implements AddressManagementService {
 
+    private final EmployeeDocumentRepository employeeDocumentRepository;
     private final EmployeeAddressRepository employeeAddressRepository;
     private final EmployeeRepository employeeRepository;
     private final AddressHistoryRepository addressHistoryRepository;
@@ -46,7 +39,8 @@ public class AddressManagementServiceImpl implements AddressManagementService {
     private final StateRepository stateRepository;
     private final CityRepository cityRepository;
 
-    public AddressManagementServiceImpl(EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository, AddressHistoryRepository addressHistoryRepository, GeocodingService geocodingService, CountryRepository countryRepository, StateRepository stateRepository, CityRepository cityRepository) {
+    public AddressManagementServiceImpl(EmployeeDocumentRepository employeeDocumentRepository, EmployeeAddressRepository employeeAddressRepository, EmployeeRepository employeeRepository, AddressHistoryRepository addressHistoryRepository, GeocodingService geocodingService, CountryRepository countryRepository, StateRepository stateRepository, CityRepository cityRepository) {
+        this.employeeDocumentRepository = employeeDocumentRepository;
         this.employeeAddressRepository = employeeAddressRepository;
         this.employeeRepository = employeeRepository;
         this.addressHistoryRepository = addressHistoryRepository;
@@ -390,6 +384,82 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                 employeeAddressRepository.save(existing);
             });
         }
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse verifyAddress(
+            Long addressId,
+            VerifyAddressRequest request) {
+
+        EmployeeAddress address =
+                employeeAddressRepository.findById(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Address not found with id : "
+                                                + addressId
+                                ));
+
+        if (Boolean.TRUE.equals(address.getIsDeleted())) {
+
+            throw new BadRequestException(
+                    "Cannot verify deleted address"
+            );
+        }
+
+        if (Boolean.TRUE.equals(address.getIsVerified())) {
+
+            throw new BadRequestException(
+                    "Address already verified"
+            );
+        }
+
+        Employee verifier =
+                employeeRepository.findById(
+                        request.getVerifiedBy()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Verifier employee not found"
+                        ));
+
+        address.setIsVerified(true);
+
+        address.setVerifiedBy(verifier);
+
+        address.setVerifiedDate(LocalDateTime.now());
+
+        address.setVerificationNotes(
+                request.getVerificationNotes()
+        );
+
+        address.setUpdatedDate(LocalDateTime.now());
+
+        address.setUpdatedBy(
+                verifier.getEmployeeId()
+        );
+
+        if (request.getVerificationDocumentId() != null) {
+
+            EmployeeDocument document =
+                    employeeDocumentRepository.findById(
+                            request.getVerificationDocumentId()
+                    ).orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Verification document not found"
+                            ));
+
+            address.setVerificationDocument(document);
+        }
+
+        EmployeeAddress verifiedAddress =
+                employeeAddressRepository.save(address);
+
+        saveAddressHistory(
+                verifiedAddress,
+                "VERIFIED"
+        );
+
+        return mapToResponse(verifiedAddress);
     }
 
     private void saveAddressHistory(EmployeeAddress address,

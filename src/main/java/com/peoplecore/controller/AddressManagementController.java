@@ -3,6 +3,7 @@ package com.peoplecore.controller;
 
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
+import com.peoplecore.dto.request.VerifyAddressRequest;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.service.AddressManagementService;
 import com.peoplecore.util.ApiResponse;
@@ -56,5 +57,11 @@ public class AddressManagementController {
     public ResponseEntity<ApiResponse<String>> deleteAddress(@PathVariable Long addressId, HttpServletRequest request) {
         addressManagementService.deleteAddress(addressId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address deleted successfully", request.getRequestURI(), null));
+    }
+
+    @PatchMapping("/{addressId}/verify")
+    public ResponseEntity<ApiResponse<AddressResponse>> verifyAddress(@PathVariable Long addressId, @RequestBody VerifyAddressRequest request, HttpServletRequest httpServletRequest) {
+        AddressResponse response = addressManagementService.verifyAddress(addressId, request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address verified successfully", httpServletRequest.getRequestURI(), response));
     }
 }
