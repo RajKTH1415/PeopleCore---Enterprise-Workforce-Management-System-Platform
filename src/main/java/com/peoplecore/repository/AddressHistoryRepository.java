@@ -12,4 +12,5 @@ public interface AddressHistoryRepository
 
     List<AddressHistory> findByEmployeeIdOrderByChangedAtDesc(Long employeeId);
 
+    List<AddressHistory> findByAddress_IdOrderByChangedAtDesc(Long addressId);
 }

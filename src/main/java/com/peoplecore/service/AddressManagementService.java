@@ -3,6 +3,7 @@ package com.peoplecore.service;
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.request.VerifyAddressRequest;
+import com.peoplecore.dto.response.AddressHistoryResponse;
 import com.peoplecore.dto.response.AddressResponse;
 
 import java.util.List;
@@ -31,4 +32,6 @@ public interface AddressManagementService {
             Long addressId,
             VerifyAddressRequest request
     );
+
+    List<AddressHistoryResponse> getAddressHistory(Long addressId);
 }

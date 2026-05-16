@@ -3,6 +3,7 @@ package com.peoplecore.service.Impl;
 import com.peoplecore.dto.request.AddressRequest;
 import com.peoplecore.dto.request.UpdateAddressRequest;
 import com.peoplecore.dto.request.VerifyAddressRequest;
+import com.peoplecore.dto.response.AddressHistoryResponse;
 import com.peoplecore.dto.response.AddressResponse;
 import com.peoplecore.dto.response.GeocodeResponse;
 import com.peoplecore.exception.BadRequestException;
@@ -19,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 @Slf4j
@@ -460,6 +458,81 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         );
 
         return mapToResponse(verifiedAddress);
+    }
+
+    @Override
+    public List<AddressHistoryResponse> getAddressHistory(Long addressId) {
+
+        List<AddressHistory> historyList =
+                addressHistoryRepository
+                        .findByAddress_IdOrderByChangedAtDesc(addressId);
+
+        return historyList.stream()
+                .map(history -> {
+
+                    List<String> changedFields = getChangedFields(
+                            history.getOldValue(),
+                            history.getNewValue()
+                    );
+
+                    return AddressHistoryResponse.builder()
+                            .historyId(history.getId())
+                            .addressId(history.getAddress().getId())
+                            .employeeId(history.getEmployee().getId())
+                            .action(history.getAction())
+                            .oldValue(history.getOldValue())
+                            .newValue(history.getNewValue())
+                            .changedFields(changedFields)
+                            .changedAt(history.getChangedAt())
+                            .changedBy(history.getChangedBy())
+                            .ipAddress(history.getIpAddress())
+                            .remarks(history.getRemarks())
+                            .build();
+                })
+                .toList();
+    }
+
+    private List<String> getChangedFields(
+            Map<String, Object> oldValue,
+            Map<String, Object> newValue
+    ) {
+
+        List<String> changedFields = new ArrayList<>();
+
+        if (oldValue == null || newValue == null) {
+            return changedFields;
+        }
+
+        for (String key : oldValue.keySet()) {
+
+            Object oldVal = oldValue.get(key);
+            Object newVal = newValue.get(key);
+
+            if (!Objects.equals(oldVal, newVal)) {
+                changedFields.add(key);
+            }
+        }
+
+        return changedFields;
+    }
+
+    private Map<String, Object> buildAddressSnapshot(
+            EmployeeAddress address
+    ) {
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("addressType", address.getAddressType());
+        data.put("addressLine1", address.getAddressLine1());
+        data.put("addressLine2", address.getAddressLine2());
+        data.put("landmark", address.getLandmark());
+        data.put("city", address.getCity());
+        data.put("state", address.getState());
+        data.put("pincode", address.getPincode());
+        data.put("country", address.getCountry());
+        data.put("isPrimary", address.getIsPrimary());
+
+        return data;
     }
 
     private void saveAddressHistory(EmployeeAddress address,
