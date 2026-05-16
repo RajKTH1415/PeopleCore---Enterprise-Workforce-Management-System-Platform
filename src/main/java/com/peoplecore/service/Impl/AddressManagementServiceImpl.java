@@ -148,7 +148,24 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         EmployeeAddress savedAddress =
                 employeeAddressRepository.save(address);
 
-        saveAddressHistory(savedAddress, "CREATE");
+        Map<String, Object> newValue = new HashMap<>();
+
+        newValue.put("addressType", savedAddress.getAddressType());
+        newValue.put("addressLine1", savedAddress.getAddressLine1());
+        newValue.put("addressLine2", savedAddress.getAddressLine2());
+        newValue.put("landmark", savedAddress.getLandmark());
+        newValue.put("city", savedAddress.getCity());
+        newValue.put("state", savedAddress.getState());
+        newValue.put("pincode", savedAddress.getPincode());
+        newValue.put("country", savedAddress.getCountry());
+        newValue.put("isPrimary", savedAddress.getIsPrimary());
+
+        saveAddressHistory(
+                savedAddress,
+                "CREATE",
+                null,
+                newValue
+        );
 
         return mapToResponse(savedAddress);
     }
@@ -195,7 +212,8 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                                                 + addressId
                                 ));
 
-        saveAddressHistory(existingAddress, "UPDATED");
+        Map<String, Object> oldValue =
+                buildAddressSnapshot(existingAddress);
 
         if (Boolean.TRUE.equals(request.getPrimaryAddress())) {
 
@@ -225,21 +243,10 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                                         "City not found"
                                 ));
 
-        existingAddress.setAddressType(
-                request.getAddressType()
-        );
-
-        existingAddress.setAddressLine1(
-                request.getAddressLine1()
-        );
-
-        existingAddress.setAddressLine2(
-                request.getAddressLine2()
-        );
-
-        existingAddress.setLandmark(
-                request.getLandmark()
-        );
+        existingAddress.setAddressType(request.getAddressType());
+        existingAddress.setAddressLine1(request.getAddressLine1());
+        existingAddress.setAddressLine2(request.getAddressLine2());
+        existingAddress.setLandmark(request.getLandmark());
 
         existingAddress.setCity(city.getName());
         existingAddress.setState(state.getName());
@@ -249,33 +256,13 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         existingAddress.setStateMaster(state);
         existingAddress.setCountryMaster(country);
 
-        existingAddress.setPincode(
-                request.getPostalCode()
-        );
-
-        existingAddress.setIsPrimary(
-                request.getPrimaryAddress()
-        );
-
-        existingAddress.setResidenceType(
-                request.getResidenceType()
-        );
-
-        existingAddress.setStaySince(
-                request.getStaySince()
-        );
-
-        existingAddress.setEffectiveFrom(
-                request.getEffectiveFrom()
-        );
-
-        existingAddress.setEffectiveTo(
-                request.getEffectiveTo()
-        );
-
-        existingAddress.setNotes(
-                request.getNotes()
-        );
+        existingAddress.setPincode(request.getPostalCode());
+        existingAddress.setIsPrimary(request.getPrimaryAddress());
+        existingAddress.setResidenceType(request.getResidenceType());
+        existingAddress.setStaySince(request.getStaySince());
+        existingAddress.setEffectiveFrom(request.getEffectiveFrom());
+        existingAddress.setEffectiveTo(request.getEffectiveTo());
+        existingAddress.setNotes(request.getNotes());
 
         existingAddress.setIsVerified(false);
         existingAddress.setVerifiedDate(null);
@@ -287,9 +274,19 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         EmployeeAddress updatedAddress =
                 employeeAddressRepository.save(existingAddress);
 
+        Map<String, Object> newValue =
+                buildAddressSnapshot(updatedAddress);
+
+
+        saveAddressHistory(
+                updatedAddress,
+                "UPDATED",
+                oldValue,
+                newValue
+        );
+
         return mapToResponse(updatedAddress);
     }
-
     @Override
     @Transactional
     public AddressResponse setPrimaryAddress(Long addressId) {
@@ -306,10 +303,8 @@ public class AddressManagementServiceImpl implements AddressManagementService {
             return mapToResponse(address);
         }
 
-        saveAddressHistory(
-                address,
-                "PRIMARY_ADDRESS_CHANGED"
-        );
+        Map<String, Object> oldValue =
+                buildAddressSnapshot(address);
 
         Long employeeId =
                 address.getEmployee().getId();
@@ -324,6 +319,16 @@ public class AddressManagementServiceImpl implements AddressManagementService {
 
         EmployeeAddress updatedAddress =
                 employeeAddressRepository.save(address);
+
+        Map<String, Object> newValue =
+                buildAddressSnapshot(updatedAddress);
+
+        saveAddressHistory(
+                updatedAddress,
+                "PRIMARY_ADDRESS_CHANGED",
+                oldValue,
+                newValue
+        );
 
         return mapToResponse(updatedAddress);
     }
@@ -347,9 +352,14 @@ public class AddressManagementServiceImpl implements AddressManagementService {
             );
         }
 
+        Map<String, Object> oldValue =
+                buildAddressSnapshot(address);
+
         saveAddressHistory(
                 address,
-                "DELETED"
+                "DELETED",
+                oldValue,
+                null
         );
 
         boolean wasPrimary =
@@ -452,9 +462,17 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         EmployeeAddress verifiedAddress =
                 employeeAddressRepository.save(address);
 
+        Map<String, Object> oldValue =
+                buildAddressSnapshot(address);
+
+        Map<String, Object> newValue =
+                buildAddressSnapshot(verifiedAddress);
+
         saveAddressHistory(
                 verifiedAddress,
-                "VERIFIED"
+                "VERIFIED",
+                oldValue,
+                newValue
         );
 
         return mapToResponse(verifiedAddress);
@@ -490,6 +508,62 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                             .build();
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void permanentDeleteAddress(Long addressId) {
+
+        EmployeeAddress address =
+                employeeAddressRepository.findById(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Address not found with id : "
+                                                + addressId
+                                ));
+
+        addressHistoryRepository
+                .deleteByAddress_Id(addressId);
+
+        employeeAddressRepository.delete(address);
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse restoreAddress(Long addressId) {
+
+        EmployeeAddress address =
+                employeeAddressRepository
+                        .findByIdAndIsDeletedTrue(addressId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Deleted address not found with id : "
+                                                + addressId
+                                ));
+
+        Map<String, Object> oldValue =
+                buildAddressSnapshot(address);
+
+        address.setIsDeleted(false);
+        address.setIsActive(true);
+
+        address.setUpdatedDate(LocalDateTime.now());
+        address.setUpdatedBy("SYSTEM");
+
+        EmployeeAddress restoredAddress =
+                employeeAddressRepository.save(address);
+
+        Map<String, Object> newValue =
+                buildAddressSnapshot(restoredAddress);
+
+        saveAddressHistory(
+                restoredAddress,
+                "RESTORED",
+                oldValue,
+                newValue
+        );
+
+        return mapToResponse(restoredAddress);
     }
 
     private List<String> getChangedFields(
@@ -534,29 +608,57 @@ public class AddressManagementServiceImpl implements AddressManagementService {
 
         return data;
     }
+//
+//    private void saveAddressHistory(EmployeeAddress address,
+//                                    String action) {
+//
+//        try {
+//
+//            Map<String, Object> data = new HashMap<>();
+//
+//            data.put("addressType", address.getAddressType());
+//            data.put("addressLine1", address.getAddressLine1());
+//            data.put("addressLine2", address.getAddressLine2());
+//            data.put("landmark", address.getLandmark());
+//            data.put("city", address.getCity());
+//            data.put("state", address.getState());
+//            data.put("pincode", address.getPincode());
+//            data.put("country", address.getCountry());
+//            data.put("isPrimary", address.getIsPrimary());
+//
+//            AddressHistory history = AddressHistory.builder()
+//                    .address(address)
+//                    .employee(address.getEmployee())
+//                    .action(action)
+//                    .newValue(data)
+//                    .changedAt(LocalDateTime.now())
+//                    .changedBy("SYSTEM")
+//                    .remarks(action + " address")
+//                    .build();
+//
+//            addressHistoryRepository.save(history);
+//
+//        } catch (Exception ex) {
+//
+//            log.error("Error while saving address history", ex);
+//        }
+//    }
 
-    private void saveAddressHistory(EmployeeAddress address,
-                                    String action) {
+    private void saveAddressHistory(
+            EmployeeAddress address,
+            String action,
+            Map<String, Object> oldValue,
+            Map<String, Object> newValue
+    ) {
 
         try {
-
-            Map<String, Object> data = new HashMap<>();
-
-            data.put("addressType", address.getAddressType());
-            data.put("addressLine1", address.getAddressLine1());
-            data.put("addressLine2", address.getAddressLine2());
-            data.put("landmark", address.getLandmark());
-            data.put("city", address.getCity());
-            data.put("state", address.getState());
-            data.put("pincode", address.getPincode());
-            data.put("country", address.getCountry());
-            data.put("isPrimary", address.getIsPrimary());
 
             AddressHistory history = AddressHistory.builder()
                     .address(address)
                     .employee(address.getEmployee())
                     .action(action)
-                    .newValue(data)
+                    .oldValue(oldValue)
+                    .newValue(newValue)
                     .changedAt(LocalDateTime.now())
                     .changedBy("SYSTEM")
                     .remarks(action + " address")

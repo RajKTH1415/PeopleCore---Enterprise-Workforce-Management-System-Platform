@@ -14,6 +14,10 @@ import java.util.Optional;
 public interface EmployeeAddressRepository
         extends JpaRepository<EmployeeAddress, Long> {
 
+
+    Optional<EmployeeAddress>
+    findByIdAndIsDeletedTrue(Long addressId);
+
     List<EmployeeAddress> findByEmployeeIdAndIsDeletedFalse(Long employeeId);
 
     Optional<EmployeeAddress> findByEmployeeIdAndIsPrimaryTrue(Long employeeId);
@@ -43,4 +47,6 @@ public interface EmployeeAddressRepository
     findFirstByEmployeeIdAndIsDeletedFalseAndIsActiveTrueOrderByCreatedDateAsc(
             Long employeeId
     );
+
+
 }

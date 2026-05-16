@@ -70,4 +70,15 @@ public class AddressManagementController {
         List<AddressHistoryResponse> response = addressManagementService.getAddressHistory(addressId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address history fetched successfully", request.getRequestURI(), response));
     }
+
+    @DeleteMapping("/{addressId}/permanent")
+    public ResponseEntity<ApiResponse<String>> permanentDeleteAddress(@PathVariable Long addressId, HttpServletRequest request) {
+        addressManagementService.permanentDeleteAddress(addressId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address permanently deleted successfully", request.getRequestURI(), null));
+    }
+    @PatchMapping("/{addressId}/restore")
+    public ResponseEntity<ApiResponse<AddressResponse>> restoreAddress(@PathVariable Long addressId, HttpServletRequest request) {
+        AddressResponse response = addressManagementService.restoreAddress(addressId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Address restored successfully", request.getRequestURI(), response));
+    }
 }

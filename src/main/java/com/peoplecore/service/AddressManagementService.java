@@ -34,4 +34,9 @@ public interface AddressManagementService {
     );
 
     List<AddressHistoryResponse> getAddressHistory(Long addressId);
+
+
+    void permanentDeleteAddress(Long addressId);
+
+    AddressResponse restoreAddress(Long addressId);
 }
